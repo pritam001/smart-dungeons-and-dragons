@@ -1,0 +1,48 @@
+{
+    "name": "dnd-ai-monorepo",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev:web": "npm run dev -w @dnd-ai/web",
+        "dev:api": "npm run dev -w @dnd-ai/api",
+        "prebuild": "node scripts/check-node.js",
+        "build": "npm run build -w @dnd-ai/api && npm run build -w @dnd-ai/web",
+        "build:all": "npm run build",
+        "start": "npm run build -w @dnd-ai/api && node apps/api/dist/index.js & npm run start -w @dnd-ai/web",
+        "start:all": "npm run start",
+        "lint": "echo 'No eslint configured'",
+        "typecheck": "npm run typecheck -w @dnd-ai/api && npm run typecheck -w @dnd-ai/web",
+        "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+        "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "@types/jsonwebtoken": "9.0.5",
+        "@types/node": "20.12.7",
+        "@types/react": "18.2.46",
+        "@types/react-dom": "18.2.18",
+        "prettier": "3.3.3",
+        "husky": "9.0.11",
+        "lint-staged": "15.2.5",
+        "semver": "7.6.3",
+        "tsx": "4.11.0",
+        "typescript": "5.9.2"
+    },
+    "lint-staged": {
+        "**/*.{ts,tsx,js,jsx,json,md}": [
+            "prettier --write",
+            "git add"
+        ]
+    },
+    "engines": {
+        "node": ">=24.7.0",
+        "npm": ">=11.5.0"
+    },
+    "volta": {
+        "node": "24.7.0",
+        "npm": "11.6.0"
+    }
+}

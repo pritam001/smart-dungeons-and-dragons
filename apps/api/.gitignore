@@ -1,0 +1,7 @@
+# API specific ignores
+/dist
+/node_modules
+.env
+.env.*
+coverage/
+*.log

@@ -1,0 +1,8 @@
+# Web (Next.js) specific ignores
+.next
+out
+/node_modules
+.env
+.env.*
+coverage/
+*.log

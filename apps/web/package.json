@@ -1,0 +1,23 @@
+{
+    "name": "@dnd-ai/web",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "dev": "next dev -p 13000",
+        "build": "NODE_ENV=production next build",
+        "start": "next start",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "next": "14.2.5",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
+        "zod": "3.23.8",
+        "@dnd-ai/types": "workspace:*"
+    },
+    "volta": {
+        "node": "24.7.0",
+        "npm": "11.6.0"
+    }
+}
