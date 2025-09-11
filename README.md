@@ -2,14 +2,21 @@
 
 ## 🔥 **Recent Updates**
 
+-   ✅ **Enhanced Campaign Privacy & Management** - Private campaigns by default, public campaign browser, GM ownership transfer
+-   ✅ **Player Management System** - Remove players from campaigns, regenerate room codes for security
+-   ✅ **Campaign Lifecycle Tracking** - Planning → Active → Completed → Archived states with status management
+-   ✅ **Campaign Configuration** - Privacy settings, descriptions, room code regeneration, and campaign notes
+-   ✅ **Enhanced GM Campaign Management** - GMs can now add more seats to active campaigns dynamically
 -   ✅ **Seat Management Overhaul** - GM-only AI controls, enhanced character management, smart back navigation
+-   ✅ **Character Creation for Empty Seats** - GMs can create characters for any empty seat in their campaigns
+-   ✅ **Streamlined Player Join Flow** - Removed confusing "Add Player" UI; players join naturally via room codes
 -   ✅ **Join Campaign Fix** - Fixed navigation bug preventing campaign joining
 -   ✅ **Character Edit Security** - Comprehensive anti-cheat system with permission validation
 -   ✅ **Comprehensive Dice Rolling System** with D&D 5e mechanics
 -   ✅ **Character Creation & Management** with full stat calculations
 -   ✅ **Dropdown-based Dice Interface** for better user experience
 -   ✅ **Roll History Tracking** per campaign
--   ✅ **Advantage/Disadvantage** and critical hit detectionative D&D Platform with AI Assistance
+-   ✅ **Advantage/Disadvantage** and critical hit detection
 
 A modern web-based platform for playing Dungeons & Dragons with integrated AI assistance, featuring campaign management, seat assignment, and intelligent AI companions for both players and game masters.
 
@@ -40,22 +47,35 @@ npm install && npm run dev
 
 ### ✅ **Campaign Management**
 
--   **🎲 Create Campaigns**: Customize campaign name, player count (1-8 seats), GM type (human/AI)
--   **🛡️ GM Dashboard**: Dedicated "My Campaigns" page for GMs to manage all their campaigns
--   **🚀 Auto-Navigation**: Campaign creators automatically redirected to seat management
--   **📋 Browse Campaigns**: Visual campaign browser showing room codes, player count, and GM status
--   **🗡️ Join Campaigns**: Enter room codes or click-to-join from campaign list
+-   **🎲 Create Campaigns**: Customize campaign name, description, privacy settings, player count (1-8 seats), GM type (human/AI)
+-   **🔒 Campaign Privacy**: Private campaigns (default) only joinable via room code, public campaigns visible in browser
+-   **📊 Campaign Lifecycle**: Formal campaign states (Planning → Active → Completed → Archived) with status tracking
+-   **🛡️ GM Dashboard**: Dedicated "My Campaigns" page for GMs to manage all their campaigns with status controls
+-   **� Room Code Management**: Regenerate room codes for security, easy copy-to-clipboard sharing
+-   **👥 Player Management**: Remove players from campaigns (characters leave but stay owned by player)
+-   **⚖️ GM Ownership Transfer**: Transfer GM role to another player in the campaign
+-   **�🚀 Auto-Navigation**: Campaign creators automatically redirected to seat management
+-   **📋 Browse Public Campaigns**: Visual campaign browser showing only public campaigns, room codes, and status
+-   **🗡️ Join Campaigns**: Enter room codes for private campaigns or click-to-join public ones
 -   **🔒 Duplicate Join Prevention**: Users cannot join the same campaign multiple times
 -   **⚖️ Role Separation**: Campaign creators are automatically GMs and cannot join as players
 -   **🪑 Seat Management**: Automatic assignment to available seats with full campaign validation
+-   **➕ Dynamic Seat Addition**: GMs can add more seats to active campaigns (up to 8 total including GM)
 -   **💾 Persistent Storage**: MongoDB integration for reliable data persistence
 
 #### **GM Access Flow**
 
-1. **Create Campaign** → Automatically redirected to seat management
-2. **My Campaigns** → Access all campaigns where you're the GM
-3. **Seat Management** → Full control over AI settings, characters, and players
-4. **Room Code Sharing** → Easy copy-to-clipboard for inviting players
+1. **Create Campaign** → Set privacy, description, and basic settings → Automatically redirected to seat management
+2. **My Campaigns** → Access all campaigns where you're the GM with status and privacy indicators
+3. **Campaign Status Management** → Update campaign lifecycle state (Planning/Active/Completed/Archived)
+4. **Room Code Security** → Regenerate room codes when needed for campaign security
+5. **Player Management** → Remove players from campaigns when necessary (D&D best practice: character leaves too)
+6. **GM Transfer** → Transfer GM ownership to another player when stepping down
+7. **Seat Management** → Full control over AI settings, characters, and players
+8. **Add More Seats** → Dynamically expand campaign capacity as group grows
+9. **Create Characters for Empty Seats** → Pre-create characters for future players
+10. **Room Code Sharing** → Easy copy-to-clipboard for inviting players to private campaigns
+11. **Back Navigation** → Context-aware navigation between campaign management screens
 
 ### ✅ **Character Creation & Management System**
 
@@ -83,20 +103,29 @@ npm install && npm run dev
 
 -   **🛡️ GM-Only AI Controls**: Only Game Masters can toggle AI settings for any seat
 -   **👥 Enhanced Character Management**: GMs can create/view all characters, players can view all but edit only their own
--   **🏠 Smart Navigation**: Context-aware back buttons return to seat management from character views
+-   **� Character Creation for Empty Seats**: GMs can pre-create characters for any empty seat in their campaigns
+-   **�🏠 Smart Navigation**: Context-aware back buttons return to seat management from character views
+-   **➕ Add More Seats**: GMs can dynamically increase seat count for growing campaigns (max 8 total)
 -   **📋 All Characters View**: Dedicated section showing all campaign characters with permission indicators
+-   **🎯 Natural Join Flow**: Players join campaigns using room codes (no manual GM assignment needed)
 -   **Dynamic Seat Assignment**: Players can be assigned to specific seats
 -   **Character Integration**: Direct links to create or view characters from seats
 -   **Real-time Updates**: Seat status updates reflect immediately across sessions
 
 #### **Permission Matrix**
 
-| Action             | Player (Own Character) | Player (Campaign Member) | GM (Any Character) | Outsider |
-| ------------------ | ---------------------- | ------------------------ | ------------------ | -------- |
-| View Character     | ✅                     | ✅                       | ✅                 | ❌       |
-| Edit Character     | ✅                     | ❌                       | ✅                 | ❌       |
-| Create Character   | ✅                     | ❌                       | ✅                 | ❌       |
-| Toggle AI Settings | ❌                     | ❌                       | ✅                 | ❌       |
+| Action                        | Player (Own Character) | Player (Campaign Member) | GM (Any Character) | Outsider |
+| ----------------------------- | ---------------------- | ------------------------ | ------------------ | -------- |
+| View Character                | ✅                     | ✅                       | ✅                 | ❌       |
+| Edit Character                | ✅                     | ❌                       | ✅                 | ❌       |
+| Create Character              | ✅                     | ❌                       | ✅                 | ❌       |
+| Create Character (Empty Seat) | ❌                     | ❌                       | ✅                 | ❌       |
+| Toggle AI Settings            | ❌                     | ❌                       | ✅                 | ❌       |
+| Add Seats to Campaign         | ❌                     | ❌                       | ✅                 | ❌       |
+| Remove Players                | ❌                     | ❌                       | ✅                 | ❌       |
+| Transfer GM Ownership         | ❌                     | ❌                       | ✅                 | ❌       |
+| Regenerate Room Code          | ❌                     | ❌                       | ✅                 | ❌       |
+| Update Campaign Status        | ❌                     | ❌                       | ✅                 | ❌       |
 
 #### **Character Access Rules**
 
@@ -223,8 +252,11 @@ npm run format       # Format code with Prettier
 
 -   [x] **Character Creation System**: D&D 5e character sheets, stats, and equipment ✅
 -   [x] **Dice Rolling System**: D&D dice notation with advantage/disadvantage ✅
--   [ ] **Enhanced Campaign Management**: Settings, permissions, and room code management
--   [ ] **Direct Seat Assignment**: Improved player-to-seat assignment interface
+-   [x] **Enhanced Campaign Management**: GM dashboard, dynamic seat addition, room code management ✅
+-   [x] **Direct Seat Assignment**: Natural join flow and GM seat management controls ✅
+-   [x] **Campaign Configuration**: Privacy settings, descriptions, AI model restrictions, edit modes ✅
+-   [x] **Player Management**: Remove players, transfer ownership, role management ✅
+-   [x] **Campaign State Tracking**: Status management, session tracking, basic notes ✅
 
 ### **Phase 2: Interactive Features (Medium Priority)**
 
@@ -256,12 +288,17 @@ npm run format       # Format code with Prettier
 
 -   `GET /campaigns` - List all campaigns
 -   `POST /campaigns` - Create new campaign (protected)
+-   `PUT /campaigns/:id` - Update campaign details (GM only, protected)
 -   `POST /campaigns/join` - Join campaign by room code (protected)
+-   `POST /campaigns/:id/remove-player` - Remove player from campaign (GM only, protected)
+-   `POST /campaigns/:id/transfer-gm` - Transfer GM ownership to another player (GM only, protected)
+-   `POST /campaigns/:id/regenerate-code` - Generate new room code for security (GM only, protected)
 
 ### **Seat Management**
 
 -   `POST /campaigns/:id/seat/ai` - Toggle AI control for seat
 -   `POST /campaigns/:id/seat/human` - Assign human player to seat
+-   `POST /campaigns/:id/seats/add` - Add more seats to active campaign (GM only)
 
 ### **Characters**
 

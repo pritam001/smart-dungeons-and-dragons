@@ -7,7 +7,12 @@ import {
     joinCampaign,
     updateSeatAI,
     assignSeat,
+    addSeatsToActiveCampaign,
     listCampaigns,
+    removePlayerFromCampaign,
+    transferGMOwnership,
+    updateCampaign,
+    regenerateRoomCode,
     createCharacter,
     getCharacter,
     updateCharacter,
@@ -100,6 +105,8 @@ fastify.post("/campaigns", async (req, reply) => {
 
     const schema = z.object({
         name: z.string().min(1),
+        description: z.string().optional(),
+        isPrivate: z.boolean().optional(),
         gmIsHuman: z.boolean(),
         gmAIModelId: z.string().optional(),
         seatCount: z.number().int().min(1).max(8),
@@ -177,7 +184,163 @@ fastify.post("/campaigns/:id/seat/human", async (req, reply) => {
     return { ok: true };
 });
 
+fastify.post("/campaigns/:id/seats/add", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+    const body = z.object({ additionalSeatCount: z.number().int().min(1).max(4) }).parse(req.body);
+
+    // Verify the user is the GM of this campaign
+    const campaigns = await listCampaigns();
+    const campaign = campaigns.find((c) => c.id === params.id);
+    if (!campaign || campaign.createdBy !== user.id) {
+        return reply.status(403).send({ error: "Only the GM can add seats to the campaign" });
+    }
+
+    const ok = await addSeatsToActiveCampaign(params.id, body.additionalSeatCount);
+    if (!ok)
+        return reply
+            .status(400)
+            .send({ error: "Failed to add seats. Campaign may not exist or seat limit exceeded." });
+    return { ok: true };
+});
+
 fastify.get("/campaigns", async () => await listCampaigns());
+
+// Remove player from campaign
+fastify.post("/campaigns/:id/remove-player", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+    const body = z
+        .object({
+            playerId: z.string(),
+            preserveCharacter: z.boolean().optional().default(false),
+        })
+        .parse(req.body);
+
+    try {
+        const ok = await removePlayerFromCampaign(
+            {
+                campaignId: params.id,
+                playerId: body.playerId,
+                preserveCharacter: body.preserveCharacter,
+            },
+            user,
+        );
+
+        if (!ok) return reply.status(400).send({ error: "Failed to remove player" });
+        return { ok: true };
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message });
+    }
+});
+
+// Transfer GM ownership
+fastify.post("/campaigns/:id/transfer-gm", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+    const body = z.object({ newGMPlayerId: z.string() }).parse(req.body);
+
+    const ok = await transferGMOwnership(
+        {
+            campaignId: params.id,
+            newGMPlayerId: body.newGMPlayerId,
+        },
+        user,
+    );
+
+    if (!ok) return reply.status(400).send({ error: "Failed to transfer GM ownership" });
+    return { ok: true };
+});
+
+// Update campaign details
+fastify.put("/campaigns/:id", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+    const body = z
+        .object({
+            name: z.string().optional(),
+            description: z.string().optional(),
+            isPrivate: z.boolean().optional(),
+            status: z.enum(["planning", "active", "completed", "archived"]).optional(),
+        })
+        .parse(req.body);
+
+    const ok = await updateCampaign(
+        {
+            campaignId: params.id,
+            ...body,
+        },
+        user,
+    );
+
+    if (!ok) return reply.status(400).send({ error: "Failed to update campaign" });
+    return { ok: true };
+});
+
+// Regenerate room code
+fastify.post("/campaigns/:id/regenerate-code", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    try {
+        const result = await regenerateRoomCode(
+            {
+                campaignId: params.id,
+            },
+            user,
+        );
+
+        if (!result) return reply.status(400).send({ error: "Failed to regenerate room code" });
+        return result;
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message });
+    }
+});
 
 // Get campaigns created by current user (for GMs)
 fastify.get("/my-campaigns", async (req, reply) => {

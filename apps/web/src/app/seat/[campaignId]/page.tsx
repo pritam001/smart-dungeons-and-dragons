@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AIModelMeta, CampaignConfig } from "@dnd-ai/types";
 
 interface SeatState {
@@ -14,6 +15,7 @@ interface SeatState {
 export default function SeatManagement({ params }: { params: { campaignId: string } }) {
     const [state, setState] = useState<SeatState>({ loading: true, models: [] });
     const [token, setToken] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const stored = localStorage.getItem("authToken");
@@ -68,12 +70,65 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
         setState((s) => ({ ...s, campaign }));
     }
 
+    async function removePlayer(playerId: string) {
+        if (!state.campaign || !state.isGM) return; // Only GM can remove players
+
+        const confirmMessage =
+            "Are you sure you want to remove this player? Their character will also leave the campaign but won't be deleted.";
+        if (!confirm(confirmMessage)) return;
+
+        try {
+            const response = await fetch(
+                `http://localhost:13333/campaigns/${state.campaign.id}/remove-player`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ playerId }),
+                },
+            );
+
+            if (response.ok) {
+                // Refresh campaign data
+                const campaigns = await fetch("http://localhost:13333/campaigns").then((r) =>
+                    r.json(),
+                );
+                const campaign = campaigns.find((c: CampaignConfig) => c.id === params.campaignId);
+                setState((s) => ({ ...s, campaign }));
+                alert("Player removed from campaign");
+            } else {
+                const error = await response.json();
+                alert(`Failed to remove player: ${error.error}`);
+            }
+        } catch (error) {
+            alert("Error removing player. Please try again.");
+        }
+    }
+
     if (state.loading) return <main style={{ padding: 24 }}>Loading...</main>;
     if (!state.campaign) return <main style={{ padding: 24 }}>Campaign not found.</main>;
 
     return (
         <main style={{ padding: 24 }}>
-            <h2>Seat Management</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+                <button
+                    onClick={() => router.back()}
+                    style={{
+                        backgroundColor: "#6c757d",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 16px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 14,
+                    }}
+                >
+                    ← Back
+                </button>
+                <h2 style={{ margin: 0 }}>Seat Management</h2>
+            </div>
             <p>
                 <strong>Campaign:</strong> {state.campaign.name} | <strong>Room Code:</strong>{" "}
                 {state.campaign.roomCode}
@@ -83,6 +138,123 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                     🛡️ GM Access - You can manage AI settings and all characters
                 </p>
             )}
+
+            {/* Add Seats Section - GM Only */}
+            {state.isGM && (
+                <div
+                    style={{
+                        marginBottom: 20,
+                        padding: 16,
+                        backgroundColor: "#fff3cd",
+                        border: "1px solid #ffeaa7",
+                        borderRadius: 8,
+                    }}
+                >
+                    <h3 style={{ marginTop: 0, marginBottom: 12 }}>Add More Seats</h3>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontSize: 14 }}>
+                            Current seats: {state.campaign.seats.length}/8
+                        </span>
+                        <select
+                            id="additional-seat-count"
+                            style={{
+                                padding: "8px 12px",
+                                border: "1px solid #ccc",
+                                borderRadius: 4,
+                                fontSize: 14,
+                            }}
+                            disabled={state.campaign.seats.length >= 8}
+                        >
+                            <option value="">Select number to add...</option>
+                            {Array.from(
+                                { length: Math.min(4, 8 - state.campaign.seats.length) },
+                                (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                        Add {i + 1} seat{i + 1 > 1 ? "s" : ""}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                        <button
+                            onClick={async () => {
+                                const additionalSeatCount = parseInt(
+                                    (
+                                        document.getElementById(
+                                            "additional-seat-count",
+                                        ) as HTMLSelectElement
+                                    )?.value,
+                                );
+
+                                if (!additionalSeatCount) {
+                                    alert("Please select how many seats to add");
+                                    return;
+                                }
+
+                                try {
+                                    const response = await fetch(
+                                        `http://localhost:13333/campaigns/${state.campaign?.id}/seats/add`,
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                ...(token
+                                                    ? { Authorization: `Bearer ${token}` }
+                                                    : {}),
+                                            },
+                                            body: JSON.stringify({ additionalSeatCount }),
+                                        },
+                                    );
+
+                                    if (response.ok) {
+                                        // Refresh the campaign data
+                                        const campaigns = await fetch(
+                                            "http://localhost:13333/campaigns",
+                                        ).then((r) => r.json());
+                                        const campaign = campaigns.find(
+                                            (c: CampaignConfig) => c.id === params.campaignId,
+                                        );
+                                        setState((s) => ({ ...s, campaign }));
+
+                                        // Clear the selection
+                                        (
+                                            document.getElementById(
+                                                "additional-seat-count",
+                                            ) as HTMLSelectElement
+                                        ).value = "";
+
+                                        alert(
+                                            `Successfully added ${additionalSeatCount} seat${additionalSeatCount > 1 ? "s" : ""} to the campaign!`,
+                                        );
+                                    } else {
+                                        const error = await response.json();
+                                        alert(`Failed to add seats: ${error.error}`);
+                                    }
+                                } catch (error) {
+                                    alert("Error adding seats. Please try again.");
+                                }
+                            }}
+                            style={{
+                                backgroundColor: "#fd7e14",
+                                color: "white",
+                                border: "none",
+                                padding: "8px 16px",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                                fontSize: 14,
+                            }}
+                            disabled={state.campaign.seats.length >= 8}
+                        >
+                            Add Seats
+                        </button>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#666", margin: "8px 0 0 0" }}>
+                        {state.campaign.seats.length >= 8
+                            ? "Maximum seat limit reached (8 seats including GM)."
+                            : "Add more empty seats that can be assigned to players later."}
+                    </p>
+                </div>
+            )}
+
             <table style={{ borderCollapse: "collapse", width: "100%", marginTop: 16 }}>
                 <thead>
                     <tr>
@@ -145,10 +317,10 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                         )}
 
                                         {/* Create Character - GM can create for anyone, players only for themselves */}
-                                        {seat.humanPlayerId &&
-                                            !seat.characterId &&
+                                        {!seat.characterId &&
                                             seat.role === "player" &&
-                                            canManageSeat && (
+                                            (canManageSeat ||
+                                                (state.isGM && !seat.humanPlayerId)) && (
                                                 <button
                                                     onClick={() =>
                                                         (window.location.href = `/create-character?campaignId=${state.campaign?.id}&seatId=${seat.seatId}`)
@@ -163,7 +335,9 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                                         cursor: "pointer",
                                                     }}
                                                 >
-                                                    Create Character
+                                                    {seat.humanPlayerId
+                                                        ? "Create Character"
+                                                        : "Create Character (Empty Seat)"}
                                                 </button>
                                             )}
 
@@ -186,6 +360,29 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                                 View Character
                                             </button>
                                         )}
+
+                                        {/* Remove Player - Only GM can remove players (not themselves) */}
+                                        {state.isGM &&
+                                            seat.humanPlayerId &&
+                                            seat.role === "player" &&
+                                            seat.humanPlayerId !== state.currentUser?.id && (
+                                                <button
+                                                    onClick={() =>
+                                                        removePlayer(seat.humanPlayerId!)
+                                                    }
+                                                    style={{
+                                                        backgroundColor: "#dc3545",
+                                                        color: "white",
+                                                        border: "none",
+                                                        padding: "4px 8px",
+                                                        borderRadius: 4,
+                                                        fontSize: 12,
+                                                        cursor: "pointer",
+                                                    }}
+                                                >
+                                                    Remove Player
+                                                </button>
+                                            )}
                                     </div>
                                 </td>
                             </tr>

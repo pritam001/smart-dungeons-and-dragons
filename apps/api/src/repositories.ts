@@ -30,6 +30,12 @@ import {
     CharacterRoll,
     CampaignRollHistory,
     DiceRoll,
+    CampaignStatus,
+    RemovePlayerRequest,
+    TransferGMRequest,
+    UpdateCampaignRequest,
+    RegenerateRoomCodeRequest,
+    RegenerateRoomCodeResponse,
 } from "@dnd-ai/types";
 import jwt from "jsonwebtoken";
 import { getDb, campaignsCol, playersCol, charactersCol, rollHistoryCol } from "./mongo.js";
@@ -87,15 +93,20 @@ export async function createCampaign(
         });
     }
 
+    const now = new Date().toISOString();
     const campaign: CampaignConfig = {
         id: nanoid(),
         roomCode,
         name: req.name,
+        description: req.description,
         createdBy: user.id,
-        createdAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
         seats,
         aiModelWhitelist: whitelist,
         characterEditMode: req.characterEditMode || "strict",
+        isPrivate: req.isPrivate ?? true, // campaigns are private by default
+        status: CampaignStatus.PLANNING, // new campaigns start in planning phase
     };
 
     await campaignsCol(db).insertOne(campaign);
@@ -244,9 +255,226 @@ export async function assignSeat(req: UpdateSeatHumanAssignmentRequest): Promise
     return result.modifiedCount > 0;
 }
 
+export async function addSeatsToActiveCampaign(
+    campaignId: string,
+    additionalSeatCount: number,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+
+    if (!campaign) {
+        return false;
+    }
+
+    // Find the highest player seat number
+    const playerSeats = campaign.seats.filter((s) => s.role === SeatRole.PLAYER);
+    const highestSeatNumber = Math.max(
+        ...playerSeats.map((s) => {
+            const match = s.seatId.match(/^p(\d+)$/);
+            return match ? parseInt(match[1]) : 0;
+        }),
+        0,
+    );
+
+    // Check if adding seats would exceed the maximum (8 total including GM)
+    const totalSeatsAfter = campaign.seats.length + additionalSeatCount;
+    if (totalSeatsAfter > 8) {
+        return false;
+    }
+
+    // Create new seats
+    const newSeats: SeatAssignment[] = [];
+    for (let i = 0; i < additionalSeatCount; i++) {
+        newSeats.push({
+            seatId: `p${highestSeatNumber + i + 1}`,
+            role: SeatRole.PLAYER,
+            humanPlayerId: undefined,
+            ai: { enabled: false },
+        });
+    }
+
+    // Add new seats to the campaign
+    const updatedSeats = [...campaign.seats, ...newSeats];
+    const result = await campaignsCol(db).updateOne(
+        { id: campaignId },
+        { $set: { seats: updatedSeats } },
+    );
+
+    return result.modifiedCount > 0;
+}
+
 export async function listCampaigns(): Promise<CampaignConfig[]> {
     const db = await getDb();
     return await campaignsCol(db).find({}).toArray();
+}
+
+// Player Management Functions
+export async function removePlayerFromCampaign(
+    req: RemovePlayerRequest,
+    requestingUser: PublicUserProfile,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+    if (!campaign) return false;
+
+    // Only GM can remove players
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM =
+        gmSeat?.humanPlayerId === requestingUser.id || campaign.createdBy === requestingUser.id;
+    if (!isGM) return false;
+
+    // Can't remove the GM
+    if (req.playerId === campaign.createdBy) {
+        throw new Error("Cannot remove the campaign creator/GM");
+    }
+
+    // Find player's seat
+    const playerSeat = campaign.seats.find((s) => s.humanPlayerId === req.playerId);
+    if (!playerSeat) return false; // Player not in campaign
+
+    // Handle character based on D&D best practices:
+    // When a player leaves, their character typically leaves too (they can't play without the player)
+    // This maintains story consistency and prevents orphaned characters
+    if (playerSeat.characterId && !req.preserveCharacter) {
+        // Remove character from campaign but don't delete it (player keeps ownership)
+        await charactersCol(db).updateOne(
+            { id: playerSeat.characterId },
+            { $unset: { campaignId: "", seatId: "" } },
+        );
+    }
+
+    // Clear the seat
+    const updatedSeats = campaign.seats.map((s) =>
+        s.seatId === playerSeat.seatId
+            ? {
+                  ...s,
+                  humanPlayerId: undefined,
+                  characterId: req.preserveCharacter ? s.characterId : undefined,
+              }
+            : s,
+    );
+
+    const result = await campaignsCol(db).updateOne(
+        { id: req.campaignId },
+        {
+            $set: {
+                seats: updatedSeats,
+                updatedAt: new Date().toISOString(),
+            },
+        },
+    );
+
+    return result.modifiedCount > 0;
+}
+
+export async function transferGMOwnership(
+    req: TransferGMRequest,
+    currentGM: PublicUserProfile,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+    if (!campaign) return false;
+
+    // Only current GM can transfer ownership
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isCurrentGM =
+        gmSeat?.humanPlayerId === currentGM.id || campaign.createdBy === currentGM.id;
+    if (!isCurrentGM) return false;
+
+    // New GM must be a current player in the campaign
+    const newGMSeat = campaign.seats.find((s) => s.humanPlayerId === req.newGMPlayerId);
+    if (!newGMSeat || newGMSeat.role === "gm") return false;
+
+    // Update seats: move current GM to player seat, new player to GM seat
+    const updatedSeats = campaign.seats.map((s) => {
+        if (s.role === "gm") {
+            return { ...s, humanPlayerId: req.newGMPlayerId };
+        }
+        if (s.humanPlayerId === req.newGMPlayerId) {
+            return { ...s, humanPlayerId: currentGM.id };
+        }
+        return s;
+    });
+
+    const result = await campaignsCol(db).updateOne(
+        { id: req.campaignId },
+        {
+            $set: {
+                createdBy: req.newGMPlayerId,
+                seats: updatedSeats,
+                updatedAt: new Date().toISOString(),
+            },
+        },
+    );
+
+    return result.modifiedCount > 0;
+}
+
+export async function updateCampaign(
+    req: UpdateCampaignRequest,
+    user: PublicUserProfile,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+    if (!campaign) return false;
+
+    // Only GM can update campaign
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) return false;
+
+    const updateFields: any = { updatedAt: new Date().toISOString() };
+
+    if (req.name !== undefined) updateFields.name = req.name;
+    if (req.description !== undefined) updateFields.description = req.description;
+    if (req.isPrivate !== undefined) updateFields.isPrivate = req.isPrivate;
+    if (req.status !== undefined) updateFields.status = req.status;
+
+    const result = await campaignsCol(db).updateOne({ id: req.campaignId }, { $set: updateFields });
+
+    return result.modifiedCount > 0;
+}
+
+export async function regenerateRoomCode(
+    req: RegenerateRoomCodeRequest,
+    user: PublicUserProfile,
+): Promise<RegenerateRoomCodeResponse | null> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+    if (!campaign) return null;
+
+    // Only GM can regenerate room code
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) return null;
+
+    let newRoomCode: string;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    // Ensure the new room code is unique
+    do {
+        newRoomCode = generateRoomCode();
+        attempts++;
+        const existing = await campaignsCol(db).findOne({ roomCode: newRoomCode });
+        if (!existing) break;
+    } while (attempts < maxAttempts);
+
+    if (attempts >= maxAttempts) {
+        throw new Error("Unable to generate unique room code");
+    }
+
+    const result = await campaignsCol(db).updateOne(
+        { id: req.campaignId },
+        {
+            $set: {
+                roomCode: newRoomCode,
+                updatedAt: new Date().toISOString(),
+            },
+        },
+    );
+
+    return result.modifiedCount > 0 ? { roomCode: newRoomCode } : null;
 }
 
 // Character Permission Functions

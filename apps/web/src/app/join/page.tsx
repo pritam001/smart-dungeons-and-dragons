@@ -47,7 +47,9 @@ export default function JoinCampaignPage() {
             // List campaigns API doesn't require authentication currently
             const res = await fetch("http://localhost:13333/campaigns");
             const data = await res.json();
-            setCampaigns(data);
+            // Only show public campaigns in the browser
+            const publicCampaigns = data.filter((c: CampaignConfig) => !c.isPrivate);
+            setCampaigns(publicCampaigns);
         } catch (error) {
             console.error("Failed to load campaigns:", error);
         } finally {
@@ -112,12 +114,17 @@ export default function JoinCampaignPage() {
             <h1>Join Campaign</h1>
 
             <div style={{ marginBottom: 32 }}>
-                <h2>Available Campaigns</h2>
+                <h2>Public Campaigns</h2>
+                <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
+                    Showing only public campaigns. To join a private campaign, enter its room code
+                    below.
+                </p>
                 {loading ? (
                     <p>Loading campaigns...</p>
                 ) : campaigns.length === 0 ? (
                     <p style={{ color: "#666", fontStyle: "italic" }}>
-                        No active campaigns found. Ask someone to create a campaign first!
+                        No public campaigns found. Ask someone to create a campaign or enter a room
+                        code below!
                     </p>
                 ) : (
                     <div style={{ display: "grid", gap: 16, marginBottom: 24 }}>

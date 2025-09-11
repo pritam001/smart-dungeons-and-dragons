@@ -58,24 +58,39 @@ export interface SeatAssignment {
     characterId?: string; // chosen character sheet id
 }
 
+export const CampaignStatus = {
+    PLANNING: "planning",
+    ACTIVE: "active",
+    COMPLETED: "completed",
+    ARCHIVED: "archived",
+} as const;
+
+export type CampaignStatus = (typeof CampaignStatus)[keyof typeof CampaignStatus];
+
 export interface CampaignConfig {
     id: CampaignId;
     roomCode: RoomCode;
     name: string;
+    description?: string; // optional campaign description/notes
     createdBy: PlayerId;
     createdAt: string;
+    updatedAt: string;
     seats: SeatAssignment[];
     aiModelWhitelist: string[]; // allowed model ids for this campaign
     characterEditMode: CampaignEditMode; // controls who can edit character stats
+    isPrivate: boolean; // private campaigns only joinable via room code
+    status: CampaignStatus; // campaign lifecycle state
 }
 
 export interface CreateCampaignRequest {
     name: string;
+    description?: string; // optional campaign description
     gmIsHuman: boolean;
     gmAIModelId?: string; // if gmIsHuman=false
     seatCount: number; // count of player seats only (GM separate)
     aiEnabledDefault?: boolean;
     characterEditMode?: CampaignEditMode; // defaults to "strict"
+    isPrivate?: boolean; // defaults to true for private campaigns
 }
 
 export interface CreateCampaignResponse {
@@ -107,6 +122,35 @@ export interface UpdateSeatHumanAssignmentRequest {
     campaignId: CampaignId;
     seatId: string;
     playerId?: PlayerId; // undefined = unassign
+}
+
+// Player Management
+export interface RemovePlayerRequest {
+    campaignId: CampaignId;
+    playerId: PlayerId;
+    preserveCharacter?: boolean; // if true, character stays in campaign but unassigned
+}
+
+export interface TransferGMRequest {
+    campaignId: CampaignId;
+    newGMPlayerId: PlayerId;
+}
+
+// Campaign Management
+export interface UpdateCampaignRequest {
+    campaignId: CampaignId;
+    name?: string;
+    description?: string;
+    isPrivate?: boolean;
+    status?: CampaignStatus;
+}
+
+export interface RegenerateRoomCodeRequest {
+    campaignId: CampaignId;
+}
+
+export interface RegenerateRoomCodeResponse {
+    roomCode: RoomCode;
 }
 
 export interface AIModelRegistrySnapshot {
