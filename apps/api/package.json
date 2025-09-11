@@ -16,7 +16,7 @@
         "zod": "3.23.8",
         "jsonwebtoken": "9.0.2",
         "mongodb": "6.8.0",
-        "@dnd-ai/types": "workspace:*"
+        "@dnd-ai/types": "file:../../packages/types"
     },
     "volta": {
         "node": "24.7.0",

@@ -5,8 +5,9 @@
         "allowJs": true,
         "noEmit": true,
         "incremental": true,
-        "module": "esnext",
         "isolatedModules": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "plugins": [
             {
                 "name": "next"
