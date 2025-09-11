@@ -11,6 +11,9 @@ import {
     createCharacter,
     getCharacter,
     updateCharacter,
+    updateCharacterAsPlayer,
+    updateCharacterAsGM,
+    getCharacterEditPermissions,
     getCharactersByCampaign,
     getCharactersByPlayer,
     rollDiceForCharacter,
@@ -101,6 +104,7 @@ fastify.post("/campaigns", async (req, reply) => {
         gmAIModelId: z.string().optional(),
         seatCount: z.number().int().min(1).max(8),
         aiEnabledDefault: z.boolean().optional(),
+        characterEditMode: z.enum(["strict", "collaborative", "sandbox"]).optional(),
     });
 
     const parsed = schema.parse(req.body);
@@ -127,10 +131,21 @@ fastify.post("/campaigns/join", async (req, reply) => {
         roomCode: z.string().min(4),
         playerDisplayName: z.string().optional(),
     });
-    const parsed = schema.parse(req.body);
-    const res = await joinCampaign(parsed, user);
-    if (!res) return reply.status(404).send({ error: "Campaign not found" });
-    return res;
+
+    try {
+        const parsed = schema.parse(req.body);
+        const res = await joinCampaign(parsed, user);
+        if (!res) return reply.status(404).send({ error: "Campaign not found" });
+        return res;
+    } catch (error: any) {
+        if (error.message.includes("Campaign is full")) {
+            return reply.status(409).send({ error: error.message });
+        }
+        if (error.message.includes("Campaign creators cannot join")) {
+            return reply.status(403).send({ error: error.message });
+        }
+        return reply.status(400).send({ error: "Failed to join campaign" });
+    }
 });
 
 fastify.post("/campaigns/:id/seat/ai", async (req, reply) => {
@@ -164,6 +179,27 @@ fastify.post("/campaigns/:id/seat/human", async (req, reply) => {
 
 fastify.get("/campaigns", async () => await listCampaigns());
 
+// Get campaigns created by current user (for GMs)
+fastify.get("/my-campaigns", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    try {
+        const campaigns = await listCampaigns();
+        const myCampaigns = campaigns.filter((campaign: any) => campaign.createdBy === user.id);
+        return myCampaigns;
+    } catch (error: any) {
+        return reply.status(500).send({ error: "Failed to fetch campaigns" });
+    }
+});
+
 // Character routes
 fastify.post("/characters", async (req, reply) => {
     const token = extractTokenFromHeader(req.headers.authorization);
@@ -177,8 +213,8 @@ fastify.post("/characters", async (req, reply) => {
     }
 
     const schema = z.object({
-        campaignId: z.string(),
-        seatId: z.string(),
+        campaignId: z.string().optional(),
+        seatId: z.string().optional(),
         name: z.string().min(1).max(100),
         race: z.object({
             name: z.string(),
@@ -358,16 +394,231 @@ fastify.put("/characters/:id", async (req, reply) => {
 
     const params = z.object({ id: z.string() }).parse(req.params);
 
-    // Flexible update schema - allow partial updates of most character fields
+    // Get permissions to determine what can be updated
+    try {
+        const permissions = await getCharacterEditPermissions(params.id, user);
+
+        // Build schema based on permissions
+        const allowedFields: any = {};
+
+        if (permissions.canEditName) {
+            allowedFields.name = z.string().min(1).max(100).optional();
+        }
+        if (permissions.canEditBackstory) {
+            allowedFields.backstory = z.string().optional();
+        }
+        if (permissions.canEditPersonality) {
+            allowedFields.personality = z
+                .object({
+                    traits: z.array(z.string()).optional(),
+                    ideals: z.array(z.string()).optional(),
+                    bonds: z.array(z.string()).optional(),
+                    flaws: z.array(z.string()).optional(),
+                })
+                .optional();
+        }
+        if (permissions.canEditAppearance) {
+            allowedFields.appearance = z
+                .object({
+                    age: z.number().optional(),
+                    height: z.string().optional(),
+                    weight: z.string().optional(),
+                    eyes: z.string().optional(),
+                    skin: z.string().optional(),
+                    hair: z.string().optional(),
+                    description: z.string().optional(),
+                })
+                .optional();
+        }
+        if (permissions.canEditLevel) {
+            allowedFields.level = z.number().int().min(1).max(20).optional();
+        }
+        if (permissions.canEditExperience) {
+            allowedFields.experiencePoints = z.number().int().min(0).optional();
+        }
+        if (permissions.canEditHitPoints) {
+            allowedFields.hitPoints = z
+                .object({
+                    current: z.number().int().min(0),
+                    maximum: z.number().int().min(1),
+                    temporary: z.number().int().min(0),
+                })
+                .optional();
+        }
+        if (permissions.canEditEquipment) {
+            allowedFields.equipment = z
+                .object({
+                    weapons: z.array(z.string()).optional(),
+                    armor: z.array(z.string()).optional(),
+                    tools: z.array(z.string()).optional(),
+                    other: z.array(z.string()).optional(),
+                })
+                .optional();
+        }
+        if (permissions.canEditCurrency) {
+            allowedFields.currency = z
+                .object({
+                    copper: z.number().int().min(0).optional(),
+                    silver: z.number().int().min(0).optional(),
+                    gold: z.number().int().min(0).optional(),
+                    platinum: z.number().int().min(0).optional(),
+                })
+                .optional();
+        }
+        if (permissions.canEditStats) {
+            allowedFields.stats = z
+                .object({
+                    strength: z.number().int().min(1).max(30).optional(),
+                    dexterity: z.number().int().min(1).max(30).optional(),
+                    constitution: z.number().int().min(1).max(30).optional(),
+                    intelligence: z.number().int().min(1).max(30).optional(),
+                    wisdom: z.number().int().min(1).max(30).optional(),
+                    charisma: z.number().int().min(1).max(30).optional(),
+                })
+                .optional();
+        }
+
+        const schema = z.object(allowedFields);
+        const updates = schema.parse(req.body);
+
+        // Route to appropriate update function based on permissions
+        if (permissions.isGM) {
+            const character = await updateCharacterAsGM(params.id, updates as any, user);
+            if (!character) {
+                return reply.status(404).send({ error: "Character not found" });
+            }
+            return character;
+        } else {
+            const character = await updateCharacterAsPlayer(params.id, updates as any, user);
+            if (!character) {
+                return reply.status(404).send({ error: "Character not found" });
+            }
+            return character;
+        }
+    } catch (error: any) {
+        if (error.message.includes("not found")) {
+            return reply.status(404).send({ error: error.message });
+        }
+        if (error.message.includes("Access denied")) {
+            return reply.status(403).send({ error: error.message });
+        }
+        return reply.status(400).send({ error: "Invalid update data or insufficient permissions" });
+    }
+});
+
+// Get character edit permissions
+fastify.get("/characters/:id/permissions", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    try {
+        const permissions = await getCharacterEditPermissions(params.id, user);
+        return permissions;
+    } catch (error: any) {
+        if (error.message.includes("not found")) {
+            return reply.status(404).send({ error: error.message });
+        }
+        return reply.status(403).send({ error: error.message });
+    }
+});
+
+// Player-safe character update
+fastify.put("/characters/:id/player-update", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    // Player-safe update schema (roleplay/appearance only)
+    const schema = z.object({
+        name: z.string().min(1).max(100).optional(),
+        backstory: z.string().optional(),
+        personality: z
+            .object({
+                traits: z.array(z.string()).optional(),
+                ideals: z.array(z.string()).optional(),
+                bonds: z.array(z.string()).optional(),
+                flaws: z.array(z.string()).optional(),
+            })
+            .optional(),
+        appearance: z
+            .object({
+                age: z.number().optional(),
+                height: z.string().optional(),
+                weight: z.string().optional(),
+                eyes: z.string().optional(),
+                skin: z.string().optional(),
+                hair: z.string().optional(),
+                description: z.string().optional(),
+            })
+            .optional(),
+    });
+
+    try {
+        const updates = schema.parse(req.body);
+        const character = await updateCharacterAsPlayer(params.id, updates, user);
+        if (!character) {
+            return reply.status(404).send({ error: "Character not found" });
+        }
+        return character;
+    } catch (error: any) {
+        if (error.message.includes("Access denied")) {
+            return reply.status(403).send({ error: error.message });
+        }
+        return reply.status(400).send({ error: "Invalid update data" });
+    }
+});
+
+// GM character update (includes mechanical stats)
+fastify.put("/characters/:id/gm-update", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    // GM update schema (includes mechanical changes)
     const schema = z.object({
         name: z.string().min(1).max(100).optional(),
         level: z.number().int().min(1).max(20).optional(),
         experiencePoints: z.number().int().min(0).optional(),
+        stats: z
+            .object({
+                strength: z.number().int().min(1).max(30).optional(),
+                dexterity: z.number().int().min(1).max(30).optional(),
+                constitution: z.number().int().min(1).max(30).optional(),
+                intelligence: z.number().int().min(1).max(30).optional(),
+                wisdom: z.number().int().min(1).max(30).optional(),
+                charisma: z.number().int().min(1).max(30).optional(),
+            })
+            .optional(),
         hitPoints: z
             .object({
-                current: z.number().int().min(0),
-                maximum: z.number().int().min(1),
-                temporary: z.number().int().min(0),
+                current: z.number().int().min(0).optional(),
+                maximum: z.number().int().min(1).optional(),
+                temporary: z.number().int().min(0).optional(),
             })
             .optional(),
         equipment: z
@@ -410,7 +661,7 @@ fastify.put("/characters/:id", async (req, reply) => {
 
     try {
         const updates = schema.parse(req.body);
-        const character = await updateCharacter(params.id, updates as any, user);
+        const character = await updateCharacterAsGM(params.id, updates, user);
         if (!character) {
             return reply.status(404).send({ error: "Character not found" });
         }

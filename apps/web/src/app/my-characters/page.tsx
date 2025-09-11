@@ -86,19 +86,34 @@ export default function MyCharactersPage() {
                 }}
             >
                 <h1>My Characters</h1>
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#6c757d",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                    }}
-                >
-                    Back to Dashboard
-                </button>
+                <div style={{ display: "flex", gap: 12 }}>
+                    <button
+                        onClick={() => router.push("/create-character")}
+                        style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#28a745",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                        }}
+                    >
+                        + Create Character
+                    </button>
+                    <button
+                        onClick={() => router.push("/dashboard")}
+                        style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#6c757d",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                        }}
+                    >
+                        Back to Dashboard
+                    </button>
+                </div>
             </div>
 
             {error && (
@@ -118,26 +133,42 @@ export default function MyCharactersPage() {
 
             {characters.length === 0 ? (
                 <div style={{ textAlign: "center", color: "#666", marginTop: 64 }}>
+                    <div style={{ fontSize: 64, marginBottom: 16 }}>⚔️</div>
                     <h2>No Characters Yet</h2>
-                    <p>
-                        You haven't created any characters yet. Join a campaign to create your first
-                        character!
+                    <p style={{ marginBottom: 24 }}>
+                        Start your adventure by creating your first character! You can create
+                        characters to use in campaigns or just for fun.
                     </p>
-                    <button
-                        onClick={() => router.push("/join")}
-                        style={{
-                            padding: "12px 24px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            fontSize: 16,
-                            cursor: "pointer",
-                            marginTop: 16,
-                        }}
-                    >
-                        Join a Campaign
-                    </button>
+                    <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                        <button
+                            onClick={() => router.push("/create-character")}
+                            style={{
+                                padding: "12px 24px",
+                                backgroundColor: "#28a745",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                fontSize: 16,
+                                cursor: "pointer",
+                            }}
+                        >
+                            ✨ Create Character
+                        </button>
+                        <button
+                            onClick={() => router.push("/join")}
+                            style={{
+                                padding: "12px 24px",
+                                backgroundColor: "#007bff",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                fontSize: 16,
+                                cursor: "pointer",
+                            }}
+                        >
+                            🎲 Join Campaign
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div
@@ -176,7 +207,9 @@ export default function MyCharactersPage() {
                                     {character.characterClass.name}
                                 </p>
                                 <p style={{ margin: "4px 0", color: "#888", fontSize: 12 }}>
-                                    Campaign: {character.campaignId}
+                                    {character.campaignId
+                                        ? `Campaign: ${character.campaignId}`
+                                        : "Standalone Character"}
                                 </p>
                             </div>
 

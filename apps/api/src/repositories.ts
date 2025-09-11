@@ -15,6 +15,10 @@ import {
     CharacterSheet,
     CreateCharacterRequest,
     UpdateCharacterRequest,
+    CharacterEditPermissions,
+    CampaignEditMode,
+    PlayerCharacterUpdateRequest,
+    GMCharacterUpdateRequest,
     CharacterId,
     CampaignId,
     CharacterModifiers,
@@ -91,6 +95,7 @@ export async function createCampaign(
         createdAt: new Date().toISOString(),
         seats,
         aiModelWhitelist: whitelist,
+        characterEditMode: req.characterEditMode || "strict",
     };
 
     await campaignsCol(db).insertOne(campaign);
@@ -106,29 +111,84 @@ export async function joinCampaign(
     const campaign = await campaignsCol(db).findOne({ roomCode: req.roomCode.toUpperCase() });
     if (!campaign) return undefined;
 
-    // Create player profile from user account
-    const profile: PlayerProfile = {
-        id: user.id,
-        displayName: req.playerDisplayName || user.displayName,
-        createdAt: new Date().toISOString(),
-    };
-    await playersCol(db).insertOne(profile);
+    // Prevent campaign creator from joining as a player (they should be GM)
+    if (campaign.createdBy === user.id) {
+        throw new Error("Campaign creators cannot join as players - you are the GM");
+    }
 
-    // Auto-assign to first available player seat
+    // Check if user is already in this campaign
+    const existingAssignment = campaign.seats.find((s) => s.humanPlayerId === user.id);
+    if (existingAssignment) {
+        // User is already in the campaign - return existing state instead of creating duplicate
+        const existingProfile = await playersCol(db).findOne({ id: user.id });
+        if (!existingProfile) {
+            // Create profile if somehow missing (edge case)
+            const profile: PlayerProfile = {
+                id: user.id,
+                displayName: req.playerDisplayName || user.displayName,
+                createdAt: new Date().toISOString(),
+            };
+            await playersCol(db).insertOne(profile);
+        }
+
+        const authToken = makeGuestToken(user.id);
+        return {
+            campaign,
+            selfPlayer: existingProfile || {
+                id: user.id,
+                displayName: req.playerDisplayName || user.displayName,
+                createdAt: new Date().toISOString(),
+            },
+            availableModels: snapshotRegistry().models.filter((m) =>
+                campaign.aiModelWhitelist.includes(m.id),
+            ),
+            authToken,
+        };
+    }
+
+    // Check if there are any available seats
     const availableSeat = campaign.seats.find(
         (s) => s.role === SeatRole.PLAYER && !s.humanPlayerId,
     );
-    if (availableSeat) {
-        await campaignsCol(db).updateOne(
-            { id: campaign.id, "seats.seatId": availableSeat.seatId },
-            { $set: { "seats.$.humanPlayerId": user.id } },
-        );
+    if (!availableSeat) {
+        throw new Error("Campaign is full - no available seats");
+    }
 
-        // Update the campaign object to reflect the change
-        const seatIndex = campaign.seats.findIndex((s) => s.seatId === availableSeat.seatId);
-        if (seatIndex !== -1) {
-            campaign.seats[seatIndex].humanPlayerId = user.id;
+    // Create or update player profile (handle potential duplicates gracefully)
+    const existingProfile = await playersCol(db).findOne({ id: user.id });
+    let profile: PlayerProfile;
+
+    if (existingProfile) {
+        // Update existing profile with new display name if provided
+        if (req.playerDisplayName && req.playerDisplayName !== existingProfile.displayName) {
+            await playersCol(db).updateOne(
+                { id: user.id },
+                { $set: { displayName: req.playerDisplayName } },
+            );
+            profile = { ...existingProfile, displayName: req.playerDisplayName };
+        } else {
+            profile = existingProfile;
         }
+    } else {
+        // Create new profile
+        profile = {
+            id: user.id,
+            displayName: req.playerDisplayName || user.displayName,
+            createdAt: new Date().toISOString(),
+        };
+        await playersCol(db).insertOne(profile);
+    }
+
+    // Assign to the available seat
+    await campaignsCol(db).updateOne(
+        { id: campaign.id, "seats.seatId": availableSeat.seatId },
+        { $set: { "seats.$.humanPlayerId": user.id } },
+    );
+
+    // Update the campaign object to reflect the change
+    const seatIndex = campaign.seats.findIndex((s) => s.seatId === availableSeat.seatId);
+    if (seatIndex !== -1) {
+        campaign.seats[seatIndex].humanPlayerId = user.id;
     }
 
     const authToken = makeGuestToken(user.id);
@@ -189,6 +249,122 @@ export async function listCampaigns(): Promise<CampaignConfig[]> {
     return await campaignsCol(db).find({}).toArray();
 }
 
+// Character Permission Functions
+export async function getCharacterEditPermissions(
+    characterId: CharacterId,
+    user: PublicUserProfile,
+): Promise<CharacterEditPermissions> {
+    const db = await getDb();
+
+    // Get character and verify it exists
+    const character = await charactersCol(db).findOne({ id: characterId });
+    if (!character) {
+        throw new Error("Character not found");
+    }
+
+    const isCharacterOwner = character.playerId === user.id;
+
+    // For standalone characters (no campaign), owner has full control
+    if (!character.campaignId) {
+        return {
+            canEditAppearance: isCharacterOwner,
+            canEditPersonality: isCharacterOwner,
+            canEditBackstory: isCharacterOwner,
+            canEditName: isCharacterOwner,
+            canEditStats: isCharacterOwner,
+            canEditLevel: isCharacterOwner,
+            canEditExperience: isCharacterOwner,
+            canEditHitPoints: isCharacterOwner,
+            canEditEquipment: isCharacterOwner,
+            canEditCurrency: isCharacterOwner,
+            isGM: false,
+            isCharacterOwner,
+            campaignEditMode: "sandbox",
+        };
+    }
+
+    // For campaign characters, check campaign permissions
+    const campaign = await campaignsCol(db).findOne({ id: character.campaignId });
+    if (!campaign) {
+        throw new Error("Campaign not found");
+    }
+
+    // Check if user is GM
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+
+    // Check if user is part of this campaign
+    const userSeat = campaign.seats.find((s) => s.humanPlayerId === user.id);
+    const hasAccess = isGM || userSeat || campaign.createdBy === user.id;
+
+    if (!hasAccess) {
+        throw new Error("Access denied: You are not part of this campaign");
+    }
+
+    const editMode = campaign.characterEditMode || "strict";
+
+    // Permission matrix based on edit mode
+    const basePermissions = {
+        canEditAppearance: isCharacterOwner || isGM,
+        canEditPersonality: isCharacterOwner || isGM,
+        canEditBackstory: isCharacterOwner || isGM,
+        canEditName: isCharacterOwner || isGM,
+        isGM,
+        isCharacterOwner,
+        campaignEditMode: editMode,
+    };
+
+    switch (editMode) {
+        case "strict":
+            // Only GM can edit mechanical stats
+            return {
+                ...basePermissions,
+                canEditStats: isGM,
+                canEditLevel: isGM,
+                canEditExperience: isGM,
+                canEditHitPoints: isGM,
+                canEditEquipment: isGM,
+                canEditCurrency: isGM,
+            };
+
+        case "collaborative":
+            // Players can edit their own character's equipment and HP, but not core stats
+            return {
+                ...basePermissions,
+                canEditStats: isGM,
+                canEditLevel: isGM,
+                canEditExperience: isGM,
+                canEditHitPoints: isCharacterOwner || isGM,
+                canEditEquipment: isCharacterOwner || isGM,
+                canEditCurrency: isCharacterOwner || isGM,
+            };
+
+        case "sandbox":
+            // Players have full control over their own characters
+            return {
+                ...basePermissions,
+                canEditStats: isCharacterOwner || isGM,
+                canEditLevel: isCharacterOwner || isGM,
+                canEditExperience: isCharacterOwner || isGM,
+                canEditHitPoints: isCharacterOwner || isGM,
+                canEditEquipment: isCharacterOwner || isGM,
+                canEditCurrency: isCharacterOwner || isGM,
+            };
+
+        default:
+            // Default to strict mode
+            return {
+                ...basePermissions,
+                canEditStats: isGM,
+                canEditLevel: isGM,
+                canEditExperience: isGM,
+                canEditHitPoints: isGM,
+                canEditEquipment: isGM,
+                canEditCurrency: isGM,
+            };
+    }
+}
+
 // Character Management Functions
 export async function createCharacter(
     req: CreateCharacterRequest,
@@ -196,20 +372,23 @@ export async function createCharacter(
 ): Promise<CharacterSheet> {
     const db = await getDb();
 
-    // Verify campaign exists and user has access
-    const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
-    if (!campaign) {
-        throw new Error("Campaign not found");
-    }
+    // Only verify campaign/seat if they are provided
+    if (req.campaignId && req.seatId) {
+        // Verify campaign exists and user has access
+        const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+        if (!campaign) {
+            throw new Error("Campaign not found");
+        }
 
-    // Verify seat exists and is available for this user
-    const seat = campaign.seats.find((s) => s.seatId === req.seatId);
-    if (!seat) {
-        throw new Error("Seat not found");
-    }
+        // Verify seat exists and is available for this user
+        const seat = campaign.seats.find((s) => s.seatId === req.seatId);
+        if (!seat) {
+            throw new Error("Seat not found");
+        }
 
-    if (seat.humanPlayerId && seat.humanPlayerId !== user.id) {
-        throw new Error("Seat is occupied by another player");
+        if (seat.humanPlayerId && seat.humanPlayerId !== user.id) {
+            throw new Error("Seat is occupied by another player");
+        }
     }
 
     // Calculate modifiers from stats
@@ -359,12 +538,22 @@ export async function createCharacter(
     // Store character in database
     await charactersCol(db).insertOne(character);
 
-    // Update seat assignment to link this character
-    const updatedSeats = campaign.seats.map((s) =>
-        s.seatId === req.seatId ? { ...s, humanPlayerId: user.id, characterId: character.id } : s,
-    );
+    // Update seat assignment only if this is for a campaign
+    if (req.campaignId && req.seatId) {
+        const campaign = await campaignsCol(db).findOne({ id: req.campaignId });
+        if (campaign) {
+            const updatedSeats = campaign.seats.map((s) =>
+                s.seatId === req.seatId
+                    ? { ...s, humanPlayerId: user.id, characterId: character.id }
+                    : s,
+            );
 
-    await campaignsCol(db).updateOne({ id: req.campaignId }, { $set: { seats: updatedSeats } });
+            await campaignsCol(db).updateOne(
+                { id: req.campaignId },
+                { $set: { seats: updatedSeats } },
+            );
+        }
+    }
 
     return character;
 }
@@ -379,62 +568,129 @@ export async function getCharacter(
     if (!character) return null;
 
     // Check if user owns this character
-    if (character.playerId !== user.id) {
-        throw new Error("Access denied: You can only view your own characters");
+    const isCharacterOwner = character.playerId === user.id;
+
+    // If user owns the character, they can view it
+    if (isCharacterOwner) {
+        return character;
     }
 
-    return character;
+    // If character is in a campaign, check if user is the GM
+    if (character.campaignId) {
+        const campaign = await campaignsCol(db).findOne({ id: character.campaignId });
+        if (campaign && campaign.createdBy === user.id) {
+            // User is the GM of this campaign, they can view all characters
+            return character;
+        }
+    }
+
+    // For campaign characters, allow viewing by all campaign members (but not editing)
+    if (character.campaignId) {
+        const campaign = await campaignsCol(db).findOne({ id: character.campaignId });
+        if (campaign) {
+            // Check if user is assigned to any seat in this campaign
+            const userSeat = campaign.seats.find((seat) => seat.humanPlayerId === user.id);
+            if (userSeat) {
+                // User is in the campaign, they can view the character
+                return character;
+            }
+        }
+    }
+
+    // Access denied - user is not the owner, GM, or campaign member
+    throw new Error(
+        "Access denied: You can only view characters you own or from campaigns you're in",
+    );
 }
 
+// DEPRECATED: This function bypasses the permission system and should not be used
+// Use updateCharacterAsPlayer or updateCharacterAsGM instead
 export async function updateCharacter(
     characterId: CharacterId,
     updates: UpdateCharacterRequest,
     user: PublicUserProfile,
 ): Promise<CharacterSheet | null> {
-    const db = await getDb();
+    // This function is deprecated and insecure - redirect to permission-based functions
+    console.warn("DEPRECATED: updateCharacter called - use updateCharacterAsPlayer/GM instead");
 
-    // Verify character exists and user owns it
-    const existingCharacter = await charactersCol(db).findOne({ id: characterId });
-    if (!existingCharacter) return null;
+    // For safety, we'll route through the permission system
+    const permissions = await getCharacterEditPermissions(characterId, user);
 
-    if (existingCharacter.playerId !== user.id) {
-        throw new Error("Access denied: You can only update your own characters");
+    if (permissions.isGM) {
+        return updateCharacterAsGM(characterId, updates as GMCharacterUpdateRequest, user);
+    } else {
+        return updateCharacterAsPlayer(characterId, updates as PlayerCharacterUpdateRequest, user);
+    }
+}
+
+export async function updateCharacterAsPlayer(
+    characterId: CharacterId,
+    updates: PlayerCharacterUpdateRequest,
+    user: PublicUserProfile,
+): Promise<CharacterSheet | null> {
+    // Check permissions first
+    const permissions = await getCharacterEditPermissions(characterId, user);
+
+    // Validate that player can only update allowed fields
+    const allowedUpdates: Partial<PlayerCharacterUpdateRequest> = {};
+
+    if (updates.name && permissions.canEditName) {
+        allowedUpdates.name = updates.name;
+    }
+    if (updates.backstory && permissions.canEditBackstory) {
+        allowedUpdates.backstory = updates.backstory;
+    }
+    if (updates.personality && permissions.canEditPersonality) {
+        allowedUpdates.personality = updates.personality;
+    }
+    if (updates.appearance && permissions.canEditAppearance) {
+        allowedUpdates.appearance = updates.appearance;
     }
 
-    // Create update object with only non-undefined fields
-    const updateFields: any = {
-        updatedAt: new Date().toISOString(),
-    };
-
-    // Add fields that are defined
-    if (updates.name !== undefined) updateFields.name = updates.name;
-    if (updates.level !== undefined) updateFields.level = updates.level;
-    if (updates.experiencePoints !== undefined)
-        updateFields.experiencePoints = updates.experiencePoints;
-    if (updates.armorClass !== undefined) updateFields.armorClass = updates.armorClass;
-    if (updates.backstory !== undefined) updateFields.backstory = updates.backstory;
-
-    // Handle nested partial updates
-    if (updates.hitPoints !== undefined) {
-        Object.keys(updates.hitPoints).forEach((key) => {
-            updateFields[`hitPoints.${key}`] =
-                updates.hitPoints![key as keyof typeof updates.hitPoints];
-        });
+    // If no allowed updates, throw error
+    if (Object.keys(allowedUpdates).length === 0) {
+        throw new Error("Access denied: You don't have permission to make these changes");
     }
 
-    if (updates.stats !== undefined) {
-        Object.keys(updates.stats).forEach((key) => {
-            updateFields[`stats.${key}`] = updates.stats![key as keyof typeof updates.stats];
-        });
+    // Perform the update using the existing function
+    return await updateCharacter(characterId, allowedUpdates as UpdateCharacterRequest, user);
+}
+
+export async function updateCharacterAsGM(
+    characterId: CharacterId,
+    updates: GMCharacterUpdateRequest,
+    user: PublicUserProfile,
+): Promise<CharacterSheet | null> {
+    // Check permissions first
+    const permissions = await getCharacterEditPermissions(characterId, user);
+
+    if (!permissions.isGM) {
+        throw new Error("Access denied: Only GMs can perform mechanical character updates");
     }
 
-    const result = await charactersCol(db).updateOne({ id: characterId }, { $set: updateFields });
+    // GM can update everything, but still validate individual permissions for audit
+    const allowedUpdates: Partial<GMCharacterUpdateRequest> = {};
 
-    if (result.modifiedCount === 0) return null;
+    // Always allowed for GM
+    if (updates.name) allowedUpdates.name = updates.name;
+    if (updates.backstory) allowedUpdates.backstory = updates.backstory;
+    if (updates.personality) allowedUpdates.personality = updates.personality;
+    if (updates.appearance) allowedUpdates.appearance = updates.appearance;
 
-    // Fetch and return the updated character
-    const updatedCharacter = await charactersCol(db).findOne({ id: characterId });
-    return updatedCharacter;
+    // Mechanical updates (GM only)
+    if (updates.level && permissions.canEditLevel) allowedUpdates.level = updates.level;
+    if (updates.experiencePoints && permissions.canEditExperience)
+        allowedUpdates.experiencePoints = updates.experiencePoints;
+    if (updates.stats && permissions.canEditStats) allowedUpdates.stats = updates.stats;
+    if (updates.hitPoints && permissions.canEditHitPoints)
+        allowedUpdates.hitPoints = updates.hitPoints;
+    if (updates.equipment && permissions.canEditEquipment)
+        allowedUpdates.equipment = updates.equipment;
+    if (updates.currency && permissions.canEditCurrency) allowedUpdates.currency = updates.currency;
+    if (updates.spellcasting) allowedUpdates.spellcasting = updates.spellcasting;
+
+    // Perform the update using the existing function
+    return await updateCharacter(characterId, allowedUpdates as UpdateCharacterRequest, user);
 }
 
 export async function getCharactersByCampaign(
@@ -489,8 +745,10 @@ export async function rollDiceForCharacter(
     // Perform the roll
     const roll = rollForCharacter(request, character);
 
-    // Store roll in campaign history
-    await addRollToHistory(character.campaignId, roll);
+    // Store roll in campaign history (only if character is part of a campaign)
+    if (character.campaignId) {
+        await addRollToHistory(character.campaignId, roll);
+    }
 
     return roll;
 }
@@ -575,8 +833,10 @@ export async function rollPresetDice(
             throw new Error(`Unsupported roll type: ${rollType}`);
     }
 
-    // Store roll in campaign history
-    await addRollToHistory(character.campaignId, roll);
+    // Store roll in campaign history (only if character is part of a campaign)
+    if (character.campaignId) {
+        await addRollToHistory(character.campaignId, roll);
+    }
 
     return roll;
 }

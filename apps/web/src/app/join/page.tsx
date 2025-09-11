@@ -9,6 +9,7 @@ export default function JoinCampaignPage() {
     const [result, setResult] = useState<any>(null);
     const [campaigns, setCampaigns] = useState<CampaignConfig[]>([]);
     const [loading, setLoading] = useState(true);
+    const [joining, setJoining] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
 
@@ -56,6 +57,9 @@ export default function JoinCampaignPage() {
 
     async function submit(e: React.FormEvent) {
         e.preventDefault();
+        setJoining(true);
+        setResult(null);
+
         const token = localStorage.getItem("authToken");
 
         try {
@@ -78,11 +82,16 @@ export default function JoinCampaignPage() {
             setResult(data);
 
             // On successful join, redirect to the campaign seat page
-            if (data.campaignId) {
-                router.push(`/seat/${data.campaignId}`);
+            if (data.campaign?.id) {
+                // Show success message briefly before redirect
+                setTimeout(() => {
+                    router.push(`/seat/${data.campaign.id}`);
+                }, 1000);
             }
         } catch (error) {
             setResult({ error: "Network error occurred" });
+        } finally {
+            setJoining(false);
         }
     }
 
@@ -258,18 +267,19 @@ export default function JoinCampaignPage() {
 
                     <button
                         type="submit"
+                        disabled={joining}
                         style={{
                             padding: 12,
-                            backgroundColor: "#28a745",
+                            backgroundColor: joining ? "#6c757d" : "#28a745",
                             color: "white",
                             border: "none",
                             borderRadius: 4,
                             fontSize: 16,
                             fontWeight: "bold",
-                            cursor: "pointer",
+                            cursor: joining ? "not-allowed" : "pointer",
                         }}
                     >
-                        Join Campaign
+                        {joining ? "Joining..." : "Join Campaign"}
                     </button>
                 </form>
             </div>
@@ -298,7 +308,8 @@ export default function JoinCampaignPage() {
                                 padding: 12,
                             }}
                         >
-                            <strong>Success!</strong> Joined campaign successfully.
+                            <strong>Success!</strong> Joined campaign "{result.campaign?.name}".
+                            Redirecting to seat...
                         </div>
                     )}
                 </div>

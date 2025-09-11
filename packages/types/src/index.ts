@@ -66,6 +66,7 @@ export interface CampaignConfig {
     createdAt: string;
     seats: SeatAssignment[];
     aiModelWhitelist: string[]; // allowed model ids for this campaign
+    characterEditMode: CampaignEditMode; // controls who can edit character stats
 }
 
 export interface CreateCampaignRequest {
@@ -74,6 +75,7 @@ export interface CreateCampaignRequest {
     gmAIModelId?: string; // if gmIsHuman=false
     seatCount: number; // count of player seats only (GM separate)
     aiEnabledDefault?: boolean;
+    characterEditMode?: CampaignEditMode; // defaults to "strict"
 }
 
 export interface CreateCampaignResponse {
@@ -276,9 +278,9 @@ export interface CharacterRace {
 
 export interface CharacterSheet {
     id: CharacterId;
-    campaignId: CampaignId;
+    campaignId?: CampaignId;
     playerId: PlayerId;
-    seatId: string;
+    seatId?: string;
 
     // Basic Information
     name: string;
@@ -343,8 +345,8 @@ export interface CharacterSheet {
 
 // Character Creation/Update Requests
 export interface CreateCharacterRequest {
-    campaignId: CampaignId;
-    seatId: string;
+    campaignId?: CampaignId;
+    seatId?: string;
     name: string;
     race: CharacterRace;
     characterClass: CharacterClass;
@@ -462,4 +464,78 @@ export interface CampaignRollHistory {
 
 export interface CharacterListResponse {
     characters: CharacterSheet[];
+}
+
+// Character Edit Permissions
+export interface CharacterEditPermissions {
+    // Always player-editable (roleplay/appearance)
+    canEditAppearance: boolean;
+    canEditPersonality: boolean;
+    canEditBackstory: boolean;
+    canEditName: boolean;
+
+    // GM permission required (mechanical advantages)
+    canEditStats: boolean;
+    canEditLevel: boolean;
+    canEditExperience: boolean;
+    canEditHitPoints: boolean;
+    canEditEquipment: boolean;
+    canEditCurrency: boolean;
+
+    // Additional context
+    isGM: boolean;
+    isCharacterOwner: boolean;
+    campaignEditMode: CampaignEditMode;
+}
+
+export type CampaignEditMode = "strict" | "collaborative" | "sandbox";
+
+export interface PlayerCharacterUpdateRequest {
+    // Player-safe updates only
+    name?: string;
+    backstory?: string;
+    personality?: Partial<{
+        traits: string[];
+        ideals: string[];
+        bonds: string[];
+        flaws: string[];
+    }>;
+    appearance?: Partial<{
+        age: number;
+        height: string;
+        weight: string;
+        eyes: string;
+        skin: string;
+        hair: string;
+        description: string;
+    }>;
+}
+
+export interface GMCharacterUpdateRequest extends PlayerCharacterUpdateRequest {
+    // GM can also edit mechanical stats
+    level?: number;
+    experiencePoints?: number;
+    stats?: Partial<CharacterStats>;
+    hitPoints?: Partial<CharacterHitPoints>;
+    armorClass?: number;
+    equipment?: Partial<CharacterEquipment>;
+    currency?: Partial<{
+        copper: number;
+        silver: number;
+        gold: number;
+        platinum: number;
+    }>;
+    spellcasting?: Partial<CharacterSpellcasting>;
+}
+
+export interface CharacterUpdateAuditLog {
+    id: string;
+    characterId: CharacterId;
+    updatedBy: PlayerId;
+    updatedAt: string;
+    changeType: "player-edit" | "gm-edit" | "system-calculation";
+    fieldsChanged: string[];
+    oldValues: Record<string, any>;
+    newValues: Record<string, any>;
+    campaignId?: CampaignId;
 }

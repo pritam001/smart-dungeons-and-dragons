@@ -59,7 +59,16 @@ export default function CreateCampaignPage() {
                 aiEnabledDefault,
             }),
         });
-        setResult(await res.json());
+
+        const data = await res.json();
+        setResult(data);
+
+        // If campaign was created successfully, redirect GM to seat management
+        if (res.ok && data.campaign) {
+            setTimeout(() => {
+                router.push(`/seat/${data.campaign.id}`);
+            }, 1500); // Show success message briefly before redirect
+        }
     }
 
     if (!isAuthenticated) {
@@ -121,9 +130,58 @@ export default function CreateCampaignPage() {
                 <button type="submit">Create</button>
             </form>
             {result && (
-                <pre style={{ marginTop: 24, background: "#111", color: "#0f0", padding: 12 }}>
-                    {JSON.stringify(result, null, 2)}
-                </pre>
+                <div style={{ marginTop: 24 }}>
+                    {result.error ? (
+                        <div
+                            style={{
+                                backgroundColor: "#f8d7da",
+                                color: "#721c24",
+                                border: "1px solid #f5c6cb",
+                                borderRadius: 4,
+                                padding: 16,
+                            }}
+                        >
+                            <strong>Error:</strong> {result.error}
+                        </div>
+                    ) : result.campaign ? (
+                        <div
+                            style={{
+                                backgroundColor: "#d4edda",
+                                color: "#155724",
+                                border: "1px solid #c3e6cb",
+                                borderRadius: 4,
+                                padding: 16,
+                            }}
+                        >
+                            <h3 style={{ margin: "0 0 12px 0" }}>
+                                ✅ Campaign Created Successfully!
+                            </h3>
+                            <p style={{ margin: "0 0 8px 0" }}>
+                                <strong>Campaign:</strong> {result.campaign.name}
+                            </p>
+                            <p style={{ margin: "0 0 8px 0" }}>
+                                <strong>Room Code:</strong> {result.campaign.roomCode}
+                            </p>
+                            <p style={{ margin: "0 0 12px 0" }}>
+                                <strong>Your Role:</strong> Game Master 🎲
+                            </p>
+                            <p style={{ margin: "0", fontSize: "14px", fontStyle: "italic" }}>
+                                Redirecting to seat management...
+                            </p>
+                        </div>
+                    ) : (
+                        <pre
+                            style={{
+                                marginTop: 24,
+                                background: "#111",
+                                color: "#0f0",
+                                padding: 12,
+                            }}
+                        >
+                            {JSON.stringify(result, null, 2)}
+                        </pre>
+                    )}
+                </div>
             )}
         </main>
     );

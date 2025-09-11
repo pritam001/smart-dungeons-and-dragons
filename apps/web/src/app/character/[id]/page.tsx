@@ -1,16 +1,31 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CharacterSheet, CharacterStats } from "@dnd-ai/types";
 
 export default function CharacterDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [character, setCharacter] = useState<CharacterSheet | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [updates, setUpdates] = useState<Partial<CharacterSheet>>({});
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [canEdit, setCanEdit] = useState(false);
+
+    // Get return navigation parameters
+    const returnTo = searchParams.get("returnTo");
+    const campaignId = searchParams.get("campaignId");
+
+    function handleBackButton() {
+        if (returnTo === "seat" && campaignId) {
+            router.push(`/seat/${campaignId}`);
+        } else {
+            router.back();
+        }
+    }
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -24,12 +39,19 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
         })
             .then((res) => {
                 if (res.ok) {
-                    setIsAuthenticated(true);
-                    loadCharacter();
+                    return res.json();
                 } else {
                     localStorage.removeItem("authToken");
                     localStorage.removeItem("user");
                     router.push("/auth");
+                    return null;
+                }
+            })
+            .then((userData) => {
+                if (userData) {
+                    setIsAuthenticated(true);
+                    setCurrentUser(userData.user);
+                    loadCharacter(userData.user);
                 }
             })
             .catch(() => {
@@ -39,7 +61,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
             });
     }, [router, params.id]);
 
-    async function loadCharacter() {
+    async function loadCharacter(user?: any) {
         const token = localStorage.getItem("authToken");
         try {
             const response = await fetch(`http://localhost:13333/characters/${params.id}`, {
@@ -59,6 +81,29 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
 
             const characterData = await response.json();
             setCharacter(characterData);
+
+            // Determine if user can edit this character
+            if (user && characterData) {
+                // User can edit if they own the character
+                const isOwner = characterData.playerId === user.id;
+
+                // Or if they're the GM of the campaign (if character is in a campaign)
+                let isGM = false;
+                if (characterData.campaignId) {
+                    try {
+                        const campaignsResponse = await fetch("http://localhost:13333/campaigns");
+                        const campaigns = await campaignsResponse.json();
+                        const campaign = campaigns.find(
+                            (c: any) => c.id === characterData.campaignId,
+                        );
+                        isGM = campaign && campaign.createdBy === user.id;
+                    } catch (e) {
+                        console.warn("Could not check GM status:", e);
+                    }
+                }
+
+                setCanEdit(isOwner || isGM);
+            }
         } catch (err) {
             setError("Network error occurred");
         } finally {
@@ -130,7 +175,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                     {error}
                 </div>
                 <button
-                    onClick={() => router.push("/my-characters")}
+                    onClick={handleBackButton}
                     style={{
                         padding: "8px 16px",
                         backgroundColor: "#6c757d",
@@ -140,7 +185,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                         cursor: "pointer",
                     }}
                 >
-                    Back to My Characters
+                    {returnTo === "seat" ? "Back to Seat Management" : "Back to My Characters"}
                 </button>
             </div>
         );
@@ -167,10 +212,20 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                         Level {character.level} {character.race.name}{" "}
                         {character.characterClass.name}
                     </p>
+                    {!canEdit && character.playerId !== currentUser?.id && (
+                        <p style={{ margin: "4px 0", color: "#e74c3c", fontSize: "14px" }}>
+                            👁️ View Only - You can view but not edit this character
+                        </p>
+                    )}
+                    {canEdit && character.playerId !== currentUser?.id && (
+                        <p style={{ margin: "4px 0", color: "#28a745", fontSize: "14px" }}>
+                            🛡️ GM Access - You can edit this character as the Game Master
+                        </p>
+                    )}
                 </div>
                 <div style={{ display: "flex", gap: 12 }}>
                     <button
-                        onClick={() => router.push("/my-characters")}
+                        onClick={handleBackButton}
                         style={{
                             padding: "8px 16px",
                             backgroundColor: "#6c757d",
@@ -180,7 +235,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                             cursor: "pointer",
                         }}
                     >
-                        Back
+                        {returnTo === "seat" ? "Back to Seat Management" : "Back"}
                     </button>
                     {editMode ? (
                         <>
@@ -215,19 +270,21 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                             </button>
                         </>
                     ) : (
-                        <button
-                            onClick={() => setEditMode(true)}
-                            style={{
-                                padding: "8px 16px",
-                                backgroundColor: "#007bff",
-                                color: "white",
-                                border: "none",
-                                borderRadius: 4,
-                                cursor: "pointer",
-                            }}
-                        >
-                            Edit Character
-                        </button>
+                        canEdit && (
+                            <button
+                                onClick={() => setEditMode(true)}
+                                style={{
+                                    padding: "8px 16px",
+                                    backgroundColor: "#007bff",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                }}
+                            >
+                                Edit Character
+                            </button>
+                        )
                     )}
                 </div>
             </div>

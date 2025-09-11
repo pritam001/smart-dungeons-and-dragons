@@ -98,7 +98,7 @@ export default function DashboardPage() {
                 </button>
             </div>
 
-            <div style={{ display: "grid", gap: 24, gridTemplateColumns: "1fr 1fr" }}>
+            <div style={{ display: "grid", gap: 24, gridTemplateColumns: "1fr 1fr 1fr" }}>
                 <Link href="/create" style={{ textDecoration: "none" }}>
                     <div
                         style={{
@@ -115,6 +115,26 @@ export default function DashboardPage() {
                         <h2 style={{ color: "#007bff", margin: "0 0 8px 0" }}>Create Campaign</h2>
                         <p style={{ color: "#666", margin: 0 }}>
                             Start a new D&D adventure with AI assistance
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/my-campaigns" style={{ textDecoration: "none" }}>
+                    <div
+                        style={{
+                            border: "2px solid #dc3545",
+                            borderRadius: 8,
+                            padding: 32,
+                            textAlign: "center",
+                            cursor: "pointer",
+                            backgroundColor: "#fff8f8",
+                            transition: "background-color 0.2s",
+                        }}
+                    >
+                        <div style={{ fontSize: 48, marginBottom: 16 }}>🛡️</div>
+                        <h2 style={{ color: "#dc3545", margin: "0 0 8px 0" }}>My Campaigns</h2>
+                        <p style={{ color: "#666", margin: 0 }}>
+                            Manage campaigns where you're the GM
                         </p>
                     </div>
                 </Link>
@@ -155,6 +175,26 @@ export default function DashboardPage() {
                         <h2 style={{ color: "#6f42c1", margin: "0 0 8px 0" }}>My Characters</h2>
                         <p style={{ color: "#666", margin: 0 }}>
                             View and manage your character sheets
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/create-character" style={{ textDecoration: "none" }}>
+                    <div
+                        style={{
+                            border: "2px solid #28a745",
+                            borderRadius: 8,
+                            padding: 32,
+                            textAlign: "center",
+                            cursor: "pointer",
+                            backgroundColor: "#f0fff4",
+                            transition: "background-color 0.2s",
+                        }}
+                    >
+                        <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
+                        <h2 style={{ color: "#155724", margin: "0 0 8px 0" }}>Create Character</h2>
+                        <p style={{ color: "#666", margin: 0 }}>
+                            Build a new character for your adventures
                         </p>
                     </div>
                 </Link>

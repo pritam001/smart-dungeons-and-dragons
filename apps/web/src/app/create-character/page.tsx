@@ -89,33 +89,34 @@ export default function CreateCharacterPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        if (!campaignId || !seatId) {
-            setError("Missing campaign or seat information");
-            return;
-        }
-
         setLoading(true);
         setError("");
 
         const token = localStorage.getItem("authToken");
 
         try {
+            const requestBody: any = {
+                name,
+                race: selectedRace,
+                characterClass: selectedClass,
+                background: selectedBackground,
+                stats,
+                backstory,
+            };
+
+            // Only include campaign/seat info if they exist
+            if (campaignId && seatId) {
+                requestBody.campaignId = campaignId;
+                requestBody.seatId = seatId;
+            }
+
             const response = await fetch("http://localhost:13333/characters", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    campaignId,
-                    seatId,
-                    name,
-                    race: selectedRace,
-                    characterClass: selectedClass,
-                    background: selectedBackground,
-                    stats,
-                    backstory,
-                }),
+                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {
@@ -126,8 +127,12 @@ export default function CreateCharacterPage() {
 
             const character = await response.json();
 
-            // Redirect to campaign seat page
-            router.push(`/seat/${campaignId}`);
+            // Redirect based on context
+            if (campaignId) {
+                router.push(`/seat/${campaignId}`);
+            } else {
+                router.push("/my-characters");
+            }
         } catch (err) {
             setError("Network error occurred");
         } finally {
@@ -149,7 +154,32 @@ export default function CreateCharacterPage() {
 
     return (
         <main style={{ padding: 24, maxWidth: 800, margin: "0 auto" }}>
-            <h1>Create Character</h1>
+            <div style={{ marginBottom: 24 }}>
+                <button
+                    onClick={() => router.back()}
+                    style={{
+                        padding: "8px 16px",
+                        background: "#6c757d",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        marginBottom: 16,
+                    }}
+                >
+                    ← Back
+                </button>
+                <h1>Create Character</h1>
+                {campaignId ? (
+                    <p style={{ color: "#6c757d", marginTop: 8 }}>
+                        Creating character for campaign
+                    </p>
+                ) : (
+                    <p style={{ color: "#6c757d", marginTop: 8 }}>
+                        Create a new character for your collection
+                    </p>
+                )}
+            </div>
 
             <form
                 onSubmit={handleSubmit}

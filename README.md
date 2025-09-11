@@ -1,5 +1,16 @@
 # DnD AI - Collaborative D&D Platform with AI Assistance
 
+## 🔥 **Recent Updates**
+
+-   ✅ **Seat Management Overhaul** - GM-only AI controls, enhanced character management, smart back navigation
+-   ✅ **Join Campaign Fix** - Fixed navigation bug preventing campaign joining
+-   ✅ **Character Edit Security** - Comprehensive anti-cheat system with permission validation
+-   ✅ **Comprehensive Dice Rolling System** with D&D 5e mechanics
+-   ✅ **Character Creation & Management** with full stat calculations
+-   ✅ **Dropdown-based Dice Interface** for better user experience
+-   ✅ **Roll History Tracking** per campaign
+-   ✅ **Advantage/Disadvantage** and critical hit detectionative D&D Platform with AI Assistance
+
 A modern web-based platform for playing Dungeons & Dragons with integrated AI assistance, featuring campaign management, seat assignment, and intelligent AI companions for both players and game masters.
 
 ## ⚡ **Quick Start**
@@ -29,10 +40,22 @@ npm install && npm run dev
 
 ### ✅ **Campaign Management**
 
--   **Create Campaigns**: Customize campaign name, player count (1-8 seats), GM type (human/AI)
--   **Browse Campaigns**: Visual campaign browser showing room codes, player count, and GM status
--   **Join Campaigns**: Enter room codes or click-to-join from campaign list
--   **Persistent Storage**: MongoDB integration for reliable data persistence
+-   **🎲 Create Campaigns**: Customize campaign name, player count (1-8 seats), GM type (human/AI)
+-   **🛡️ GM Dashboard**: Dedicated "My Campaigns" page for GMs to manage all their campaigns
+-   **🚀 Auto-Navigation**: Campaign creators automatically redirected to seat management
+-   **📋 Browse Campaigns**: Visual campaign browser showing room codes, player count, and GM status
+-   **🗡️ Join Campaigns**: Enter room codes or click-to-join from campaign list
+-   **🔒 Duplicate Join Prevention**: Users cannot join the same campaign multiple times
+-   **⚖️ Role Separation**: Campaign creators are automatically GMs and cannot join as players
+-   **🪑 Seat Management**: Automatic assignment to available seats with full campaign validation
+-   **💾 Persistent Storage**: MongoDB integration for reliable data persistence
+
+#### **GM Access Flow**
+
+1. **Create Campaign** → Automatically redirected to seat management
+2. **My Campaigns** → Access all campaigns where you're the GM
+3. **Seat Management** → Full control over AI settings, characters, and players
+4. **Room Code Sharing** → Easy copy-to-clipboard for inviting players
 
 ### ✅ **Character Creation & Management System**
 
@@ -40,7 +63,8 @@ npm install && npm run dev
 -   **Character Builder**: Interactive character creation with race, class, and background selection
 -   **Ability Score Management**: Point-buy system with automatic modifier calculation
 -   **Character Library**: View and manage all your characters across campaigns
--   **Character Editing**: Update character details, HP, equipment, and backstory
+-   **Permission-Based Editing**: Anti-cheat system with GM approval for mechanical changes
+-   **Character Edit Modes**: Strict, Collaborative, and Sandbox modes for different campaign styles
 -   **Seat Integration**: Characters automatically linked to campaign seats
 
 ### ✅ **Dice Rolling System**
@@ -57,11 +81,29 @@ npm install && npm run dev
 
 ### ✅ **Seat Management System**
 
+-   **🛡️ GM-Only AI Controls**: Only Game Masters can toggle AI settings for any seat
+-   **👥 Enhanced Character Management**: GMs can create/view all characters, players can view all but edit only their own
+-   **🏠 Smart Navigation**: Context-aware back buttons return to seat management from character views
+-   **📋 All Characters View**: Dedicated section showing all campaign characters with permission indicators
 -   **Dynamic Seat Assignment**: Players can be assigned to specific seats
--   **AI Control Toggle**: Each seat can switch between human and AI control
--   **GM Seat Management**: Dedicated Game Master seat with human or AI options
 -   **Character Integration**: Direct links to create or view characters from seats
 -   **Real-time Updates**: Seat status updates reflect immediately across sessions
+
+#### **Permission Matrix**
+
+| Action             | Player (Own Character) | Player (Campaign Member) | GM (Any Character) | Outsider |
+| ------------------ | ---------------------- | ------------------------ | ------------------ | -------- |
+| View Character     | ✅                     | ✅                       | ✅                 | ❌       |
+| Edit Character     | ✅                     | ❌                       | ✅                 | ❌       |
+| Create Character   | ✅                     | ❌                       | ✅                 | ❌       |
+| Toggle AI Settings | ❌                     | ❌                       | ✅                 | ❌       |
+
+#### **Character Access Rules**
+
+-   **Character Owners**: Can always view and edit their own characters
+-   **Campaign GMs**: Can view and edit all characters in their campaigns
+-   **Campaign Members**: Can view all characters in campaigns they've joined
+-   **Smart Navigation**: Context-aware back buttons work from any access state
 
 ### ✅ **AI Model Integration**
 
@@ -69,6 +111,45 @@ npm install && npm run dev
 -   **Capability Tagging**: Models tagged for Player Character (PC) or Game Master (GM) use
 -   **Cost Classification**: Models categorized by usage cost (low/medium/high)
 -   **Campaign Whitelisting**: Restrict available AI models per campaign
+
+### ✅ **Character Permission System (Anti-Cheat)**
+
+The permission system prevents players from cheating by controlling what aspects of characters can be edited:
+
+#### **Security Implementation**
+
+-   **🔒 Fully Secure**: All character editing endpoints enforce permission checks
+-   **No Bypass Routes**: Deprecated insecure endpoints redirect through permission system
+-   **Real-time Validation**: Dynamic schema validation based on user permissions
+-   **GM Override**: Game Masters can make any changes when appropriate
+
+#### **Character Edit Modes**
+
+-   **Strict Mode** (Default): Only GMs can edit mechanical stats (stats, level, equipment, currency)
+-   **Collaborative Mode**: Players can edit their own equipment and HP, but GMs control core stats
+-   **Sandbox Mode**: Players have full control over their own characters (testing/casual play)
+
+#### **Permission Matrix**
+
+| Field                                    | Player (Strict) | Player (Collaborative) | Player (Sandbox) | GM (All Modes) |
+| ---------------------------------------- | --------------- | ---------------------- | ---------------- | -------------- |
+| Name, Backstory, Personality, Appearance | ✅              | ✅                     | ✅               | ✅             |
+| Stats (STR, DEX, etc.)                   | ❌              | ❌                     | ✅               | ✅             |
+| Level, Experience                        | ❌              | ❌                     | ✅               | ✅             |
+| Hit Points                               | ❌              | ✅                     | ✅               | ✅             |
+| Equipment                                | ❌              | ✅                     | ✅               | ✅             |
+| Currency                                 | ❌              | ✅                     | ✅               | ✅             |
+
+#### **API Endpoints**
+
+-   `GET /characters/:id/permissions` - Check what user can edit
+-   `PUT /characters/:id` - **Secure unified endpoint** with permission-based validation
+-   `PUT /characters/:id/player-update` - Player-safe updates (roleplay only)
+-   `PUT /characters/:id/gm-update` - GM updates (includes mechanical changes)
+
+#### **Standalone Characters**
+
+Characters created without campaigns use **Sandbox Mode** - owners have full control since there's no competitive context.
 
 ## 🏗️ **Technical Architecture**
 
@@ -186,7 +267,10 @@ npm run format       # Format code with Prettier
 
 -   `POST /characters` - Create new character (protected)
 -   `GET /characters/:id` - Get character details (protected)
--   `PUT /characters/:id` - Update character (protected)
+-   `PUT /characters/:id` - Update character (legacy, unrestricted)
+-   `GET /characters/:id/permissions` - Get user's edit permissions for character (protected)
+-   `PUT /characters/:id/player-update` - Player-safe character updates (protected)
+-   `PUT /characters/:id/gm-update` - GM character updates with mechanical changes (protected)
 -   `GET /campaigns/:id/characters` - Get all characters in campaign (protected)
 -   `GET /my-characters` - Get user's characters (protected)
 
@@ -220,6 +304,77 @@ npm run format       # Format code with Prettier
 -   **CharacterSheet**: Full D&D character data with automatic calculations
 -   **DiceRoll**: Roll results with notation, modifiers, and critical detection
 -   **CampaignRollHistory**: Time-ordered roll history per campaign
+
+## 🔗 **Entity Relationships**
+
+Understanding how Users, Players, Campaigns, and Characters relate to each other in the D&D AI system:
+
+### **Core Relationships**
+
+```
+┌─────────────┐    creates    ┌─────────────┐
+│    User     │──────────────▶│ PlayerProfile│
+│(auth/login) │               │ (campaign)  │
+└─────────────┘               └─────────────┘
+                                      │
+                              joins   │
+                                 ┌────▼────┐
+                                 │Campaign │
+                                 └────┬────┘
+                                      │ has
+                                 ┌────▼────┐
+                                 │  Seat   │
+                                 └────┬────┘
+                                      │ can use
+┌─────────────┐    owns        ┌─────▼─────┐
+│   Player    │──────────────▶ │Character  │
+│             │                │           │
+└─────────────┘                └───────────┘
+```
+
+### **1. Users → Players (1:1)**
+
+-   **User**: Authenticated account with login credentials (`users` collection)
+-   **Player**: Same person's profile when participating in campaigns (`players` collection)
+-   **Relationship**: Each User gets a PlayerProfile created when joining their first campaign
+
+### **2. Players → Campaigns (M:M)**
+
+-   **Join Process**: Players join campaigns using room codes
+-   **Access Control**: Players can only access campaigns they've joined
+-   **Storage**: Tracked via `SeatAssignment.humanPlayerId` in campaign seats
+
+### **3. Campaigns → Seats (1:M)**
+
+-   **Seats**: Each campaign has 1-8 player seats + 1 GM seat
+-   **Types**: `player` seats and `gm` seat
+-   **Assignment**: Seats can be empty, human-controlled, AI-controlled, or hybrid
+
+### **4. Characters → Players (M:1)**
+
+-   **Ownership**: Each character belongs to exactly one player
+-   **Collection**: Players can own multiple characters
+-   **Independence**: Characters can exist without being assigned to campaigns
+
+### **5. Characters → Campaigns (M:1, Optional)**
+
+-   **Campaign Assignment**: Characters can optionally be assigned to campaigns
+-   **Flexibility**: Characters can be created standalone (no campaign required)
+-   **Linking**: When assigned, `campaignId` and `seatId` are set
+
+### **User Journey Flow**
+
+1. **User Registration** → Creates `UserAccount`
+2. **Join Campaign** → Creates `PlayerProfile` (if first time)
+3. **Seat Assignment** → Links player to campaign seat
+4. **Character Creation** → Creates character (optionally linked to seat)
+5. **Gameplay** → Character actions within campaign context
+
+### **Character Flexibility**
+
+-   **Standalone Characters**: Created without campaigns for personal use
+-   **Campaign Characters**: Created for specific campaign seats
+-   **Character Portability**: Characters can potentially be moved between campaigns
 
 ## 🤝 **Contributing**
 
