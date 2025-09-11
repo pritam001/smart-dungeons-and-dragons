@@ -1,5 +1,5 @@
 import { MongoClient, Db, Collection } from "mongodb";
-import { CampaignConfig, PlayerProfile } from "@dnd-ai/types";
+import { CampaignConfig, PlayerProfile, UserAccount } from "@dnd-ai/types";
 
 const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
 const dbName = process.env.MONGODB_DB || "dndai";
@@ -20,6 +20,7 @@ export async function getDb(): Promise<Db> {
 async function ensureIndexes(db: Db) {
     await db.collection<CampaignConfig>("campaigns").createIndex({ roomCode: 1 }, { unique: true });
     await db.collection<PlayerProfile>("players").createIndex({ displayName: 1 });
+    await db.collection<UserAccount>("users").createIndex({ username: 1 }, { unique: true });
 }
 
 export function campaignsCol(db: Db): Collection<CampaignConfig> {
@@ -27,6 +28,9 @@ export function campaignsCol(db: Db): Collection<CampaignConfig> {
 }
 export function playersCol(db: Db): Collection<PlayerProfile> {
     return db.collection("players");
+}
+export function usersCol(db: Db): Collection<UserAccount> {
+    return db.collection("users");
 }
 
 export async function closeMongo() {

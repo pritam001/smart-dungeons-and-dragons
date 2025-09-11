@@ -1,14 +1,24 @@
-import Link from "next/link";
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+    const router = useRouter();
+
+    useEffect(() => {
+        // Check if user is authenticated
+        const token = localStorage.getItem("authToken");
+        if (token) {
+            router.push("/dashboard");
+        } else {
+            router.push("/auth");
+        }
+    }, [router]);
+
     return (
-        <main style={{ padding: 24, fontFamily: "system-ui" }}>
+        <main style={{ padding: 24, textAlign: "center" }}>
             <h1>DnD AI</h1>
-            <p>Create or join a campaign.</p>
-            <div style={{ display: "flex", gap: 16 }}>
-                <Link href="/create">Create Campaign</Link>
-                <Link href="/join">Join Campaign</Link>
-            </div>
+            <p>Loading...</p>
         </main>
     );
 }

@@ -6,6 +6,7 @@
         "packages/*"
     ],
     "scripts": {
+        "dev": "npm run dev:api & npm run dev:web",
         "dev:web": "npm run dev -w @dnd-ai/web",
         "dev:api": "npm run dev -w @dnd-ai/api",
         "prebuild": "node scripts/check-node.js",

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CreateCampaignPage() {
     const [name, setName] = useState("New Adventure");
@@ -9,12 +10,46 @@ export default function CreateCampaignPage() {
     const [creatorDisplayName, setCreatorDisplayName] = useState("GM");
     const [aiEnabledDefault, setAiEnabledDefault] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Check authentication
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            router.push("/auth");
+            return;
+        }
+
+        // Verify token is still valid
+        fetch("http://localhost:13333/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => {
+                if (res.ok) {
+                    setIsAuthenticated(true);
+                } else {
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("user");
+                    router.push("/auth");
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("user");
+                router.push("/auth");
+            });
+    }, [router]);
 
     async function submit(e: React.FormEvent) {
         e.preventDefault();
+        const token = localStorage.getItem("authToken");
         const res = await fetch("http://localhost:13333/campaigns", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({
                 name,
                 gmIsHuman,
@@ -25,6 +60,10 @@ export default function CreateCampaignPage() {
             }),
         });
         setResult(await res.json());
+    }
+
+    if (!isAuthenticated) {
+        return <div>Checking authentication...</div>;
     }
 
     return (

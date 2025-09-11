@@ -2,9 +2,28 @@ export type PlayerId = string;
 export type CampaignId = string;
 export type RoomCode = string;
 
-export enum SeatRole {
-    PLAYER = "player",
-    GAME_MASTER = "gm",
+export const SeatRole = {
+    PLAYER: "player",
+    GAME_MASTER: "gm",
+} as const;
+
+export type SeatRole = (typeof SeatRole)[keyof typeof SeatRole];
+
+export interface UserAccount {
+    id: PlayerId;
+    username: string;
+    passwordHash: string;
+    displayName: string;
+    createdAt: string;
+    lastLoginAt?: string;
+}
+
+export interface PublicUserProfile {
+    id: PlayerId;
+    username: string;
+    displayName: string;
+    createdAt: string;
+    lastLoginAt?: string;
 }
 
 export interface PlayerProfile {
@@ -53,7 +72,7 @@ export interface CreateCampaignRequest {
     name: string;
     gmIsHuman: boolean;
     gmAIModelId?: string; // if gmIsHuman=false
-    seatCount: number; // including GM? count of player seats only (GM separate)
+    seatCount: number; // count of player seats only (GM separate)
     aiEnabledDefault?: boolean;
 }
 
@@ -66,7 +85,7 @@ export interface CreateCampaignResponse {
 
 export interface JoinCampaignRequest {
     roomCode: RoomCode;
-    playerDisplayName: string;
+    playerDisplayName?: string;
 }
 
 export interface JoinCampaignResponse {
@@ -95,10 +114,26 @@ export interface AIModelRegistrySnapshot {
 
 export type Result<T, E = string> = { ok: true; value: T } | { ok: false; error: E };
 
-// Auth
-export interface GuestAuthTokenPayload {
+// Auth interfaces
+export interface RegisterRequest {
+    username: string;
+    password: string;
+    displayName: string;
+}
+
+export interface LoginRequest {
+    username: string;
+    password: string;
+}
+
+export interface AuthResponse {
+    user: PublicUserProfile;
+    authToken: string;
+}
+
+export interface AuthTokenPayload {
     sub: PlayerId;
-    kind: "guest";
+    kind: "user";
     iat: number;
     exp: number;
 }

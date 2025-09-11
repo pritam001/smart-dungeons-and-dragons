@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "next dev -p 13000",
         "build": "NODE_ENV=production next build",
-        "start": "next start",
+        "start": "next start -p 13000",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
