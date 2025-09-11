@@ -75,7 +75,6 @@ export default function MyCampaignsPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                // Update the campaign list with new room code
                 setCampaigns((prev) =>
                     prev.map((c) => (c.id === campaignId ? { ...c, roomCode: data.roomCode } : c)),
                 );
@@ -105,7 +104,6 @@ export default function MyCampaignsPage() {
             });
 
             if (response.ok) {
-                // Update the campaign list
                 setCampaigns((prev) =>
                     prev.map((c) => (c.id === campaignId ? { ...c, status: status as any } : c)),
                 );
@@ -120,337 +118,564 @@ export default function MyCampaignsPage() {
         }
     }
 
+    function getStatusColor(status: string) {
+        switch (status) {
+            case "planning":
+                return "#3b82f6";
+            case "active":
+                return "#10b981";
+            case "completed":
+                return "#f59e0b";
+            case "archived":
+                return "#6b7280";
+            default:
+                return "#6b7280";
+        }
+    }
+
+    function getStatusIcon(status: string) {
+        switch (status) {
+            case "planning":
+                return "📋";
+            case "active":
+                return "⚔️";
+            case "completed":
+                return "🏆";
+            case "archived":
+                return "📦";
+            default:
+                return "❓";
+        }
+    }
+
     if (!isAuthenticated) {
-        return <div style={{ padding: 24 }}>Checking authentication...</div>;
+        return (
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                Checking authentication...
+            </div>
+        );
     }
 
     if (loading) {
-        return <div style={{ padding: 24 }}>Loading your campaigns...</div>;
+        return (
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                Loading your campaigns...
+            </div>
+        );
     }
 
     if (error) {
         return (
-            <div style={{ padding: 24 }}>
-                <div
-                    style={{
-                        color: "#dc3545",
-                        backgroundColor: "#f8d7da",
-                        border: "1px solid #f5c6cb",
-                        borderRadius: 4,
-                        padding: 12,
-                        marginBottom: 16,
-                    }}
-                >
-                    {error}
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    padding: "2rem",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                }}
+            >
+                <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+                    <div
+                        style={{
+                            backgroundColor: "rgba(239, 68, 68, 0.1)",
+                            color: "#dc2626",
+                            border: "2px solid rgba(239, 68, 68, 0.2)",
+                            borderRadius: "12px",
+                            padding: "2rem",
+                            marginBottom: "2rem",
+                        }}
+                    >
+                        <span style={{ fontSize: "48px", display: "block", marginBottom: "1rem" }}>
+                            ❌
+                        </span>
+                        <h2 style={{ margin: "0 0 1rem 0" }}>Error Loading Campaigns</h2>
+                        <p style={{ margin: "0 0 2rem 0" }}>{error}</p>
+                        <button
+                            onClick={() => router.push("/dashboard")}
+                            style={{
+                                padding: "1rem 2rem",
+                                background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "12px",
+                                cursor: "pointer",
+                                fontWeight: "600",
+                                fontSize: "16px",
+                                transition: "all 0.3s ease",
+                            }}
+                        >
+                            ← Back to Dashboard
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#007bff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                    }}
-                >
-                    Back to Dashboard
-                </button>
             </div>
         );
     }
 
     return (
-        <main style={{ padding: 24, maxWidth: 1000, margin: "0 auto" }}>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 32,
-                }}
-            >
-                <div>
-                    <h1>🛡️ My Campaigns</h1>
-                    <p style={{ color: "#666", margin: 0 }}>
-                        Campaigns where you are the Game Master
-                    </p>
-                </div>
-                <div style={{ display: "flex", gap: 12 }}>
-                    <button
-                        onClick={() => router.push("/dashboard")}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#6c757d",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                        }}
-                    >
-                        Back to Dashboard
-                    </button>
-                    <button
-                        onClick={() => router.push("/create")}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                        }}
-                    >
-                        Create New Campaign
-                    </button>
-                </div>
-            </div>
-
-            {campaigns.length === 0 ? (
+        <main
+            style={{
+                minHeight: "100vh",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                padding: "2rem",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            }}
+        >
+            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                {/* Header */}
                 <div
                     style={{
-                        textAlign: "center",
-                        padding: 48,
-                        backgroundColor: "#f8f9fa",
-                        borderRadius: 8,
-                        border: "1px solid #dee2e6",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "3rem",
+                        background: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        borderRadius: "16px",
+                        padding: "2rem",
+                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
                     }}
                 >
-                    <div style={{ fontSize: 64, marginBottom: 16 }}>🎲</div>
-                    <h2 style={{ color: "#666", marginBottom: 16 }}>No Campaigns Yet</h2>
-                    <p style={{ color: "#666", marginBottom: 24 }}>
-                        You haven't created any campaigns yet. Start your first adventure!
-                    </p>
-                    <button
-                        onClick={() => router.push("/create")}
+                    <div>
+                        <h1
+                            style={{
+                                fontSize: "2.5rem",
+                                fontWeight: "700",
+                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                margin: "0 0 0.5rem 0",
+                            }}
+                        >
+                            🛡️ My Campaigns
+                        </h1>
+                        <p
+                            style={{
+                                color: "#64748b",
+                                margin: 0,
+                                fontSize: "1.1rem",
+                            }}
+                        >
+                            Manage campaigns where you're the Game Master
+                        </p>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                        <button
+                            onClick={() => router.push("/create")}
+                            style={{
+                                padding: "0.75rem 1.5rem",
+                                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "12px",
+                                cursor: "pointer",
+                                fontWeight: "600",
+                                transition: "all 0.2s ease",
+                                fontSize: "0.95rem",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "translateY(-2px)";
+                                e.currentTarget.style.boxShadow =
+                                    "0 10px 20px rgba(16, 185, 129, 0.3)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "translateY(0)";
+                                e.currentTarget.style.boxShadow = "none";
+                            }}
+                        >
+                            🎲 Create Campaign
+                        </button>
+                        <button
+                            onClick={() => router.push("/dashboard")}
+                            style={{
+                                padding: "0.75rem 1.5rem",
+                                background: "rgba(255, 255, 255, 0.2)",
+                                color: "#374151",
+                                border: "2px solid #e5e7eb",
+                                borderRadius: "12px",
+                                cursor: "pointer",
+                                fontWeight: "600",
+                                transition: "all 0.2s ease",
+                                fontSize: "0.95rem",
+                                backdropFilter: "blur(10px)",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
+                                e.currentTarget.style.transform = "translateY(-2px)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                                e.currentTarget.style.transform = "translateY(0)";
+                            }}
+                        >
+                            ← Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+
+                {/* Campaigns List */}
+                {campaigns.length === 0 ? (
+                    <div
                         style={{
-                            padding: "12px 24px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                            fontSize: 16,
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "20px",
+                            padding: "4rem",
+                            textAlign: "center",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                            backdropFilter: "blur(10px)",
                         }}
                     >
-                        Create Your First Campaign
-                    </button>
-                </div>
-            ) : (
-                <div
-                    style={{
-                        display: "grid",
-                        gap: 24,
-                        gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-                    }}
-                >
-                    {campaigns.map((campaign) => {
-                        const occupiedSeats = campaign.seats.filter(
-                            (s) => s.humanPlayerId && s.role === "player",
-                        ).length;
-                        const totalPlayerSeats = campaign.seats.filter(
-                            (s) => s.role === "player",
-                        ).length;
-                        const gmSeat = campaign.seats.find((s) => s.role === "gm");
+                        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>🏰</div>
+                        <h2
+                            style={{
+                                fontSize: "28px",
+                                fontWeight: "600",
+                                margin: "0 0 1rem 0",
+                                color: "#374151",
+                            }}
+                        >
+                            No Campaigns Yet
+                        </h2>
+                        <p
+                            style={{
+                                color: "#6b7280",
+                                marginBottom: "2rem",
+                                fontSize: "16px",
+                                lineHeight: "1.6",
+                                maxWidth: "500px",
+                                margin: "0 auto 2rem auto",
+                            }}
+                        >
+                            Ready to start your first adventure? Create a campaign to begin your
+                            journey as a Game Master!
+                        </p>
+                        <button
+                            onClick={() => router.push("/create")}
+                            style={{
+                                padding: "1rem 2rem",
+                                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "12px",
+                                cursor: "pointer",
+                                fontWeight: "600",
+                                fontSize: "16px",
+                                transition: "all 0.3s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "translateY(-2px)";
+                                e.currentTarget.style.boxShadow =
+                                    "0 10px 20px rgba(16, 185, 129, 0.3)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "translateY(0)";
+                                e.currentTarget.style.boxShadow = "none";
+                            }}
+                        >
+                            🎲 Create Your First Campaign
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ display: "grid", gap: "1.5rem" }}>
+                        {campaigns.map((campaign) => {
+                            const occupiedSeats = campaign.seats.filter(
+                                (s) => s.humanPlayerId,
+                            ).length;
+                            const totalSeats = campaign.seats.length;
+                            const isLoading = actionLoading === campaign.id;
 
-                        return (
-                            <div
-                                key={campaign.id}
-                                style={{
-                                    border: "1px solid #dee2e6",
-                                    borderRadius: 8,
-                                    padding: 24,
-                                    backgroundColor: "white",
-                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                                }}
-                            >
-                                <div style={{ marginBottom: 16 }}>
-                                    <h3 style={{ margin: "0 0 8px 0", color: "#333" }}>
-                                        {campaign.name}
-                                    </h3>
-                                    {campaign.description && (
-                                        <p
-                                            style={{
-                                                fontSize: "14px",
-                                                color: "#666",
-                                                margin: "0 0 8px 0",
-                                            }}
-                                        >
-                                            {campaign.description}
-                                        </p>
-                                    )}
+                            return (
+                                <div
+                                    key={campaign.id}
+                                    style={{
+                                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                        borderRadius: "16px",
+                                        padding: "2rem",
+                                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                        backdropFilter: "blur(10px)",
+                                        transition: "all 0.3s ease",
+                                    }}
+                                >
+                                    {/* Campaign Header */}
                                     <div
                                         style={{
                                             display: "flex",
-                                            alignItems: "center",
-                                            gap: 8,
-                                            marginBottom: 8,
+                                            justifyContent: "space-between",
+                                            alignItems: "flex-start",
+                                            marginBottom: "1.5rem",
                                         }}
                                     >
-                                        <div style={{ fontSize: "14px", color: "#666" }}>
-                                            <strong>Room Code:</strong> {campaign.roomCode}
+                                        <div style={{ flex: 1 }}>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "0.75rem",
+                                                    marginBottom: "0.5rem",
+                                                }}
+                                            >
+                                                <h2
+                                                    style={{
+                                                        fontSize: "24px",
+                                                        fontWeight: "700",
+                                                        margin: 0,
+                                                        color: "#1f2937",
+                                                    }}
+                                                >
+                                                    {campaign.name}
+                                                </h2>
+                                                <span
+                                                    style={{
+                                                        backgroundColor: getStatusColor(
+                                                            campaign.status,
+                                                        ),
+                                                        color: "white",
+                                                        padding: "0.25rem 0.75rem",
+                                                        borderRadius: "20px",
+                                                        fontSize: "12px",
+                                                        fontWeight: "600",
+                                                        textTransform: "uppercase",
+                                                        letterSpacing: "0.5px",
+                                                    }}
+                                                >
+                                                    {getStatusIcon(campaign.status)}{" "}
+                                                    {campaign.status}
+                                                </span>
+                                            </div>
+                                            {campaign.description && (
+                                                <p
+                                                    style={{
+                                                        color: "#6b7280",
+                                                        margin: "0 0 1rem 0",
+                                                        fontSize: "14px",
+                                                    }}
+                                                >
+                                                    {campaign.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={() => router.push(`/seat/${campaign.id}`)}
+                                            style={{
+                                                padding: "0.75rem 1rem",
+                                                background:
+                                                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "8px",
+                                                cursor: "pointer",
+                                                fontWeight: "600",
+                                                fontSize: "14px",
+                                                transition: "all 0.2s ease",
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform =
+                                                    "translateY(-1px)";
+                                                e.currentTarget.style.boxShadow =
+                                                    "0 5px 15px rgba(59, 130, 246, 0.3)";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = "translateY(0)";
+                                                e.currentTarget.style.boxShadow = "none";
+                                            }}
+                                        >
+                                            🎯 Manage
+                                        </button>
+                                    </div>
+
+                                    {/* Campaign Stats */}
+                                    <div
+                                        style={{
+                                            display: "grid",
+                                            gridTemplateColumns:
+                                                "repeat(auto-fit, minmax(200px, 1fr))",
+                                            gap: "1rem",
+                                            marginBottom: "1.5rem",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                backgroundColor: "#f9fafb",
+                                                borderRadius: "8px",
+                                                padding: "1rem",
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: "12px",
+                                                    color: "#6b7280",
+                                                    marginBottom: "0.25rem",
+                                                    textTransform: "uppercase",
+                                                    letterSpacing: "0.5px",
+                                                }}
+                                            >
+                                                Room Code
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontFamily: "monospace",
+                                                    fontSize: "18px",
+                                                    fontWeight: "bold",
+                                                    color: "#3b82f6",
+                                                }}
+                                            >
+                                                {campaign.roomCode}
+                                            </div>
                                         </div>
                                         <div
                                             style={{
-                                                fontSize: "12px",
-                                                padding: "2px 6px",
-                                                borderRadius: 3,
-                                                backgroundColor: campaign.isPrivate
-                                                    ? "#ffc107"
-                                                    : "#28a745",
-                                                color: "white",
+                                                backgroundColor: "#f9fafb",
+                                                borderRadius: "8px",
+                                                padding: "1rem",
                                             }}
                                         >
-                                            {campaign.isPrivate ? "PRIVATE" : "PUBLIC"}
+                                            <div
+                                                style={{
+                                                    fontSize: "12px",
+                                                    color: "#6b7280",
+                                                    marginBottom: "0.25rem",
+                                                    textTransform: "uppercase",
+                                                    letterSpacing: "0.5px",
+                                                }}
+                                            >
+                                                Players
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "18px",
+                                                    fontWeight: "bold",
+                                                    color: "#1f2937",
+                                                }}
+                                            >
+                                                {occupiedSeats} / {totalSeats} seats occupied
+                                            </div>
                                         </div>
                                         <div
                                             style={{
-                                                fontSize: "12px",
-                                                padding: "2px 6px",
-                                                borderRadius: 3,
-                                                backgroundColor:
-                                                    campaign.status === "active"
-                                                        ? "#28a745"
-                                                        : campaign.status === "planning"
-                                                          ? "#007bff"
-                                                          : campaign.status === "completed"
-                                                            ? "#6c757d"
-                                                            : "#ffc107",
-                                                color: "white",
+                                                backgroundColor: "#f9fafb",
+                                                borderRadius: "8px",
+                                                padding: "1rem",
                                             }}
                                         >
-                                            {campaign.status?.toUpperCase() || "PLANNING"}
+                                            <div
+                                                style={{
+                                                    fontSize: "12px",
+                                                    color: "#6b7280",
+                                                    marginBottom: "0.25rem",
+                                                    textTransform: "uppercase",
+                                                    letterSpacing: "0.5px",
+                                                }}
+                                            >
+                                                Privacy
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "18px",
+                                                    fontWeight: "bold",
+                                                    color: campaign.isPrivate
+                                                        ? "#dc2626"
+                                                        : "#10b981",
+                                                }}
+                                            >
+                                                {campaign.isPrivate ? "🔒 Private" : "🌍 Public"}
+                                            </div>
                                         </div>
                                     </div>
+
+                                    {/* Action Buttons */}
                                     <div
-                                        style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}
-                                    >
-                                        <strong>Players:</strong> {occupiedSeats}/{totalPlayerSeats}{" "}
-                                        seats filled
-                                    </div>
-                                    <div
-                                        style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}
-                                    >
-                                        <strong>GM:</strong>{" "}
-                                        {gmSeat?.humanPlayerId ? "Human (You)" : "AI"}
-                                    </div>
-                                    <div style={{ fontSize: "14px", color: "#666" }}>
-                                        <strong>Created:</strong>{" "}
-                                        {new Date(campaign.createdAt).toLocaleDateString()}
-                                    </div>
-                                </div>
-
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        gap: 8,
-                                        flexWrap: "wrap",
-                                        marginBottom: 12,
-                                    }}
-                                >
-                                    <button
-                                        onClick={() => router.push(`/seat/${campaign.id}`)}
                                         style={{
-                                            padding: "8px 16px",
-                                            backgroundColor: "#007bff",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                            fontSize: 14,
-                                            fontWeight: "bold",
+                                            display: "flex",
+                                            gap: "0.75rem",
+                                            flexWrap: "wrap",
                                         }}
                                     >
-                                        Manage Campaign
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(campaign.roomCode);
-                                            alert(
-                                                `Room code ${campaign.roomCode} copied to clipboard!`,
-                                            );
-                                        }}
-                                        style={{
-                                            padding: "8px 16px",
-                                            backgroundColor: "#28a745",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                            fontSize: 14,
-                                        }}
-                                    >
-                                        Copy Room Code
-                                    </button>
-
-                                    <button
-                                        onClick={() => regenerateRoomCode(campaign.id)}
-                                        disabled={actionLoading === campaign.id}
-                                        style={{
-                                            padding: "8px 16px",
-                                            backgroundColor: "#ffc107",
-                                            color: "black",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor:
-                                                actionLoading === campaign.id
-                                                    ? "not-allowed"
-                                                    : "pointer",
-                                            fontSize: 14,
-                                            opacity: actionLoading === campaign.id ? 0.7 : 1,
-                                        }}
-                                    >
-                                        {actionLoading === campaign.id ? "..." : "New Code"}
-                                    </button>
-                                </div>
-
-                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <select
-                                        value={campaign.status || "planning"}
-                                        onChange={(e) =>
-                                            updateCampaignStatus(campaign.id, e.target.value)
-                                        }
-                                        disabled={actionLoading === campaign.id}
-                                        style={{
-                                            padding: "6px 12px",
-                                            borderRadius: 4,
-                                            border: "1px solid #dee2e6",
-                                            fontSize: 14,
-                                            cursor:
-                                                actionLoading === campaign.id
-                                                    ? "not-allowed"
-                                                    : "pointer",
-                                        }}
-                                    >
-                                        <option value="planning">Planning</option>
-                                        <option value="active">Active</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="archived">Archived</option>
-                                    </select>
-
-                                    {occupiedSeats >= totalPlayerSeats && (
-                                        <span
+                                        <select
+                                            value={campaign.status}
+                                            onChange={(e) =>
+                                                updateCampaignStatus(campaign.id, e.target.value)
+                                            }
+                                            disabled={isLoading}
                                             style={{
-                                                padding: "8px 16px",
-                                                backgroundColor: "#f8f9fa",
-                                                color: "#6c757d",
-                                                border: "1px solid #dee2e6",
-                                                borderRadius: 4,
-                                                fontSize: 14,
-                                                display: "flex",
-                                                alignItems: "center",
+                                                padding: "0.5rem",
+                                                borderRadius: "6px",
+                                                border: "2px solid #e5e7eb",
+                                                fontSize: "14px",
+                                                fontWeight: "500",
+                                                cursor: isLoading ? "not-allowed" : "pointer",
+                                                opacity: isLoading ? 0.6 : 1,
                                             }}
                                         >
-                                            Campaign Full
-                                        </span>
-                                    )}
+                                            <option value="planning">📋 Planning</option>
+                                            <option value="active">⚔️ Active</option>
+                                            <option value="completed">🏆 Completed</option>
+                                            <option value="archived">📦 Archived</option>
+                                        </select>
+                                        <button
+                                            onClick={() => regenerateRoomCode(campaign.id)}
+                                            disabled={isLoading}
+                                            style={{
+                                                padding: "0.5rem 1rem",
+                                                background: isLoading
+                                                    ? "#9ca3af"
+                                                    : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "6px",
+                                                cursor: isLoading ? "not-allowed" : "pointer",
+                                                fontWeight: "500",
+                                                fontSize: "14px",
+                                                opacity: isLoading ? 0.6 : 1,
+                                            }}
+                                        >
+                                            🔄 New Code
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(campaign.roomCode);
+                                                alert("Room code copied to clipboard!");
+                                            }}
+                                            style={{
+                                                padding: "0.5rem 1rem",
+                                                background:
+                                                    "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "6px",
+                                                cursor: "pointer",
+                                                fontWeight: "500",
+                                                fontSize: "14px",
+                                            }}
+                                        >
+                                            📋 Copy Code
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
         </main>
     );
 }

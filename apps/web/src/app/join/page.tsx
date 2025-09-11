@@ -5,12 +5,12 @@ import { CampaignConfig } from "@dnd-ai/types";
 
 export default function JoinCampaignPage() {
     const [roomCode, setRoomCode] = useState("");
-    const [playerDisplayName, setPlayerDisplayName] = useState("Player");
     const [result, setResult] = useState<any>(null);
     const [campaigns, setCampaigns] = useState<CampaignConfig[]>([]);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userProfile, setUserProfile] = useState<any>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -21,19 +21,24 @@ export default function JoinCampaignPage() {
             return;
         }
 
-        // Verify token is still valid
+        // Verify token is still valid and get user profile
         fetch("http://localhost:13333/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => {
                 if (res.ok) {
-                    setIsAuthenticated(true);
-                    loadCampaigns();
+                    return res.json();
                 } else {
                     localStorage.removeItem("authToken");
                     localStorage.removeItem("user");
                     router.push("/auth");
+                    throw new Error("Authentication failed");
                 }
+            })
+            .then((userData) => {
+                setIsAuthenticated(true);
+                setUserProfile(userData);
+                loadCampaigns();
             })
             .catch(() => {
                 localStorage.removeItem("authToken");
@@ -71,7 +76,10 @@ export default function JoinCampaignPage() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ roomCode, playerDisplayName }),
+                body: JSON.stringify({
+                    roomCode,
+                    playerDisplayName: userProfile?.displayName || "Player",
+                }),
             });
 
             if (!res.ok) {
@@ -103,224 +111,491 @@ export default function JoinCampaignPage() {
 
     if (!isAuthenticated) {
         return (
-            <div style={{ padding: 24, textAlign: "center" }}>
-                <p>Checking authentication...</p>
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                Checking authentication...
             </div>
         );
     }
 
     return (
-        <main style={{ padding: 24 }}>
-            <h1>Join Campaign</h1>
-
-            <div style={{ marginBottom: 32 }}>
-                <h2>Public Campaigns</h2>
-                <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
-                    Showing only public campaigns. To join a private campaign, enter its room code
-                    below.
-                </p>
-                {loading ? (
-                    <p>Loading campaigns...</p>
-                ) : campaigns.length === 0 ? (
-                    <p style={{ color: "#666", fontStyle: "italic" }}>
-                        No public campaigns found. Ask someone to create a campaign or enter a room
-                        code below!
-                    </p>
-                ) : (
-                    <div style={{ display: "grid", gap: 16, marginBottom: 24 }}>
-                        {campaigns.map((campaign) => {
-                            const occupiedSeats = campaign.seats.filter(
-                                (s) => s.humanPlayerId,
-                            ).length;
-                            const totalSeats = campaign.seats.length;
-                            const isSelected = roomCode === campaign.roomCode;
-
-                            return (
-                                <div
-                                    key={campaign.id}
-                                    style={{
-                                        border: isSelected ? "2px solid #007bff" : "1px solid #ddd",
-                                        padding: 16,
-                                        borderRadius: 8,
-                                        cursor: "pointer",
-                                        backgroundColor: isSelected ? "#f0f8ff" : "#fafafa",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                    onClick={() => selectCampaign(campaign)}
-                                >
-                                    <div
-                                        style={{
-                                            fontWeight: "bold",
-                                            fontSize: 18,
-                                            marginBottom: 8,
-                                            color: "#333",
-                                        }}
-                                    >
-                                        {campaign.name}
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            fontSize: 14,
-                                            color: "#666",
-                                            marginBottom: 4,
-                                        }}
-                                    >
-                                        <strong>Room Code:</strong> {campaign.roomCode}
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            fontSize: 14,
-                                            color: "#666",
-                                            marginBottom: 4,
-                                        }}
-                                    >
-                                        <strong>Players:</strong> {occupiedSeats} / {totalSeats}{" "}
-                                        seats occupied
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            fontSize: 14,
-                                            color: "#666",
-                                        }}
-                                    >
-                                        <strong>GM:</strong>{" "}
-                                        {(() => {
-                                            const gmSeat = campaign.seats.find(
-                                                (s) => s.role === "gm",
-                                            );
-                                            if (gmSeat?.humanPlayerId) {
-                                                return "Human";
-                                            } else if (gmSeat?.ai?.enabled) {
-                                                return `AI (${gmSeat.ai.modelId || "Default"})`;
-                                            } else {
-                                                return "Not assigned";
-                                            }
-                                        })()}
-                                    </div>
-
-                                    {occupiedSeats >= totalSeats && (
-                                        <div
-                                            style={{
-                                                color: "#e74c3c",
-                                                fontSize: 12,
-                                                fontWeight: "bold",
-                                                marginTop: 8,
-                                            }}
-                                        >
-                                            Campaign Full
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-
-            <div
-                style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 8,
-                    padding: 24,
-                    backgroundColor: "#f9f9f9",
-                }}
-            >
-                <h3 style={{ marginTop: 0 }}>Join Campaign</h3>
-
-                <form
-                    onSubmit={submit}
-                    style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 400 }}
-                >
-                    <div>
-                        <label style={{ display: "block", marginBottom: 4, fontWeight: "bold" }}>
-                            Room Code
-                        </label>
-                        <input
-                            value={roomCode}
-                            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                            placeholder="Enter room code or select from list above"
-                            required
-                            style={{
-                                width: "100%",
-                                padding: 12,
-                                border: "1px solid #ddd",
-                                borderRadius: 4,
-                                fontSize: 16,
-                            }}
-                        />
-                    </div>
-
-                    <div>
-                        <label style={{ display: "block", marginBottom: 4, fontWeight: "bold" }}>
-                            Your Player Name
-                        </label>
-                        <input
-                            value={playerDisplayName}
-                            onChange={(e) => setPlayerDisplayName(e.target.value)}
-                            placeholder="Enter your character/player name"
-                            required
-                            style={{
-                                width: "100%",
-                                padding: 12,
-                                border: "1px solid #ddd",
-                                borderRadius: 4,
-                                fontSize: 16,
-                            }}
-                        />
-                    </div>
-
+        <main
+            style={{
+                minHeight: "100vh",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                padding: "2rem",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            }}
+        >
+            <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+                {/* Header */}
+                <div style={{ textAlign: "center", marginBottom: "3rem" }}>
                     <button
-                        type="submit"
-                        disabled={joining}
+                        onClick={() => router.push("/dashboard")}
                         style={{
-                            padding: 12,
-                            backgroundColor: joining ? "#6c757d" : "#28a745",
+                            position: "absolute",
+                            top: "20px",
+                            left: "20px",
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
                             color: "white",
                             border: "none",
-                            borderRadius: 4,
-                            fontSize: 16,
-                            fontWeight: "bold",
-                            cursor: joining ? "not-allowed" : "pointer",
+                            padding: "12px 20px",
+                            borderRadius: "25px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            backdropFilter: "blur(10px)",
+                            transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                            e.currentTarget.style.transform = "translateY(0)";
                         }}
                     >
-                        {joining ? "Joining..." : "Join Campaign"}
+                        ← Back to Dashboard
                     </button>
-                </form>
-            </div>
 
-            {result && (
-                <div style={{ marginTop: 24 }}>
-                    {result.error ? (
+                    <h1
+                        style={{
+                            color: "white",
+                            fontSize: "42px",
+                            fontWeight: "700",
+                            margin: "0 0 12px 0",
+                            textShadow: "0 4px 8px rgba(0,0,0,0.3)",
+                        }}
+                    >
+                        🗡️ Join Campaign
+                    </h1>
+                    <p
+                        style={{
+                            color: "rgba(255, 255, 255, 0.9)",
+                            fontSize: "18px",
+                            margin: "0",
+                            fontWeight: "300",
+                        }}
+                    >
+                        Join an existing adventure with friends
+                    </p>
+                </div>
+
+                {/* Public Campaigns Section */}
+                <div
+                    style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        borderRadius: "20px",
+                        padding: "2rem",
+                        marginBottom: "2rem",
+                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        backdropFilter: "blur(10px)",
+                    }}
+                >
+                    <h2
+                        style={{
+                            fontSize: "24px",
+                            fontWeight: "600",
+                            margin: "0 0 1rem 0",
+                            color: "#333",
+                        }}
+                    >
+                        🌟 Public Campaigns
+                    </h2>
+                    <p
+                        style={{
+                            color: "#666",
+                            marginBottom: "1.5rem",
+                            fontSize: "16px",
+                            lineHeight: "1.5",
+                        }}
+                    >
+                        Browse available public campaigns. To join a private campaign, enter its
+                        room code in the form below.
+                    </p>
+
+                    {loading ? (
+                        <div style={{ textAlign: "center", padding: "2rem", color: "#666" }}>
+                            <div style={{ fontSize: "24px", marginBottom: "1rem" }}>⏳</div>
+                            Loading campaigns...
+                        </div>
+                    ) : campaigns.length === 0 ? (
                         <div
                             style={{
-                                backgroundColor: "#f8d7da",
-                                color: "#721c24",
-                                border: "1px solid #f5c6cb",
-                                borderRadius: 4,
-                                padding: 12,
+                                textAlign: "center",
+                                padding: "3rem",
+                                color: "#666",
+                                backgroundColor: "#f8f9fa",
+                                borderRadius: "12px",
+                                border: "2px dashed #dee2e6",
                             }}
                         >
-                            <strong>Error:</strong> {result.error}
+                            <div style={{ fontSize: "48px", marginBottom: "1rem" }}>🏰</div>
+                            <h3 style={{ margin: "0 0 0.5rem 0", color: "#495057" }}>
+                                No Public Campaigns
+                            </h3>
+                            <p style={{ margin: 0 }}>
+                                No public campaigns found. Ask someone to create a campaign or enter
+                                a room code below!
+                            </p>
                         </div>
                     ) : (
-                        <div
-                            style={{
-                                backgroundColor: "#d4edda",
-                                color: "#155724",
-                                border: "1px solid #c3e6cb",
-                                borderRadius: 4,
-                                padding: 12,
-                            }}
-                        >
-                            <strong>Success!</strong> Joined campaign "{result.campaign?.name}".
-                            Redirecting to seat...
+                        <div style={{ display: "grid", gap: "1rem" }}>
+                            {campaigns.map((campaign) => {
+                                const occupiedSeats = campaign.seats.filter(
+                                    (s) => s.humanPlayerId,
+                                ).length;
+                                const totalSeats = campaign.seats.length;
+                                const isSelected = roomCode === campaign.roomCode;
+                                const isFull = occupiedSeats >= totalSeats;
+
+                                return (
+                                    <div
+                                        key={campaign.id}
+                                        style={{
+                                            border: isSelected
+                                                ? "2px solid #667eea"
+                                                : isFull
+                                                  ? "2px solid #e74c3c"
+                                                  : "2px solid #e9ecef",
+                                            borderRadius: "12px",
+                                            padding: "1.5rem",
+                                            cursor: isFull ? "not-allowed" : "pointer",
+                                            backgroundColor: isSelected
+                                                ? "rgba(102, 126, 234, 0.1)"
+                                                : isFull
+                                                  ? "rgba(231, 76, 60, 0.05)"
+                                                  : "#ffffff",
+                                            transition: "all 0.3s ease",
+                                            opacity: isFull ? 0.6 : 1,
+                                        }}
+                                        onClick={() => !isFull && selectCampaign(campaign)}
+                                        onMouseEnter={(e) => {
+                                            if (!isFull) {
+                                                e.currentTarget.style.transform =
+                                                    "translateY(-2px)";
+                                                e.currentTarget.style.boxShadow =
+                                                    "0 10px 30px rgba(0,0,0,0.1)";
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isFull) {
+                                                e.currentTarget.style.transform = "translateY(0)";
+                                                e.currentTarget.style.boxShadow = "none";
+                                            }
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontWeight: "700",
+                                                fontSize: "20px",
+                                                marginBottom: "0.5rem",
+                                                color: "#333",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "0.5rem",
+                                            }}
+                                        >
+                                            🏛️ {campaign.name}
+                                            {isFull && (
+                                                <span
+                                                    style={{ fontSize: "14px", color: "#e74c3c" }}
+                                                >
+                                                    • FULL
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {campaign.description && (
+                                            <p
+                                                style={{
+                                                    color: "#666",
+                                                    margin: "0 0 1rem 0",
+                                                    fontSize: "14px",
+                                                    fontStyle: "italic",
+                                                }}
+                                            >
+                                                {campaign.description}
+                                            </p>
+                                        )}
+
+                                        <div
+                                            style={{
+                                                display: "grid",
+                                                gridTemplateColumns: "1fr 1fr",
+                                                gap: "1rem",
+                                            }}
+                                        >
+                                            <div>
+                                                <div
+                                                    style={{
+                                                        fontSize: "14px",
+                                                        color: "#666",
+                                                        marginBottom: "0.25rem",
+                                                    }}
+                                                >
+                                                    <strong>Room Code:</strong>
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontFamily: "monospace",
+                                                        fontSize: "16px",
+                                                        fontWeight: "bold",
+                                                        color: "#667eea",
+                                                        backgroundColor: "rgba(102, 126, 234, 0.1)",
+                                                        padding: "0.25rem 0.5rem",
+                                                        borderRadius: "6px",
+                                                        display: "inline-block",
+                                                    }}
+                                                >
+                                                    {campaign.roomCode}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div
+                                                    style={{
+                                                        fontSize: "14px",
+                                                        color: "#666",
+                                                        marginBottom: "0.25rem",
+                                                    }}
+                                                >
+                                                    <strong>Players:</strong>
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: "16px",
+                                                        fontWeight: "600",
+                                                        color: "#333",
+                                                    }}
+                                                >
+                                                    {occupiedSeats} / {totalSeats} seats occupied
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: "1rem", fontSize: "14px" }}>
+                                            <span style={{ color: "#666" }}>
+                                                <strong>GM:</strong>{" "}
+                                                {(() => {
+                                                    const gmSeat = campaign.seats.find(
+                                                        (s) => s.role === "gm",
+                                                    );
+                                                    if (gmSeat?.humanPlayerId) {
+                                                        return "👤 Human";
+                                                    } else if (gmSeat?.ai?.enabled) {
+                                                        return `🤖 AI (${gmSeat.ai.modelId || "Default"})`;
+                                                    } else {
+                                                        return "❓ Not assigned";
+                                                    }
+                                                })()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
-            )}
+
+                {/* Join Form Section */}
+                <div
+                    style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        borderRadius: "20px",
+                        padding: "2rem",
+                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        backdropFilter: "blur(10px)",
+                    }}
+                >
+                    <h3
+                        style={{
+                            fontSize: "24px",
+                            fontWeight: "600",
+                            margin: "0 0 1rem 0",
+                            color: "#333",
+                        }}
+                    >
+                        🎯 Enter Room Code
+                    </h3>
+
+                    <form
+                        onSubmit={submit}
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "1.5rem",
+                            maxWidth: "500px",
+                        }}
+                    >
+                        <div>
+                            <label
+                                style={{
+                                    display: "block",
+                                    marginBottom: "0.5rem",
+                                    fontWeight: "600",
+                                    fontSize: "16px",
+                                    color: "#374151",
+                                }}
+                            >
+                                Room Code
+                            </label>
+                            <input
+                                value={roomCode}
+                                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                placeholder="Enter 6-character room code"
+                                required
+                                maxLength={6}
+                                style={{
+                                    width: "100%",
+                                    padding: "16px",
+                                    border: "2px solid #e5e7eb",
+                                    borderRadius: "12px",
+                                    fontSize: "16px",
+                                    fontFamily: "monospace",
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                    letterSpacing: "2px",
+                                    textTransform: "uppercase",
+                                    transition: "all 0.2s ease",
+                                    outline: "none",
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor = "#667eea";
+                                    e.currentTarget.style.boxShadow =
+                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor = "#e5e7eb";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}
+                            />
+                        </div>
+
+                        {/* Show current user info */}
+                        <div
+                            style={{
+                                background: "#f8fafc",
+                                borderRadius: "12px",
+                                padding: "1rem",
+                                border: "2px solid #e2e8f0",
+                                textAlign: "center",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "14px",
+                                    color: "#6b7280",
+                                    marginBottom: "0.25rem",
+                                }}
+                            >
+                                Joining as:
+                            </div>
+                            <div style={{ fontSize: "18px", fontWeight: "600", color: "#374151" }}>
+                                👤 {userProfile?.displayName || "Loading..."}
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={joining || !roomCode.trim() || !userProfile}
+                            style={{
+                                padding: "16px 32px",
+                                background: joining
+                                    ? "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)"
+                                    : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "12px",
+                                fontSize: "18px",
+                                fontWeight: "600",
+                                cursor: joining || !roomCode.trim() ? "not-allowed" : "pointer",
+                                transition: "all 0.3s ease",
+                                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                                opacity: joining || !roomCode.trim() ? 0.6 : 1,
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!joining && roomCode.trim()) {
+                                    e.currentTarget.style.transform = "translateY(-2px)";
+                                    e.currentTarget.style.boxShadow =
+                                        "0 10px 20px rgba(16, 185, 129, 0.3)";
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!joining && roomCode.trim()) {
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }
+                            }}
+                        >
+                            {joining ? "🎲 Joining..." : "🚀 Join Campaign"}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Result Messages */}
+                {result && (
+                    <div
+                        style={{
+                            marginTop: "2rem",
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "20px",
+                            padding: "2rem",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                            backdropFilter: "blur(10px)",
+                        }}
+                    >
+                        {result.error ? (
+                            <div
+                                style={{
+                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                    color: "#dc2626",
+                                    border: "2px solid rgba(239, 68, 68, 0.2)",
+                                    borderRadius: "12px",
+                                    padding: "1rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                <span style={{ fontSize: "20px" }}>❌</span>
+                                <div>
+                                    <strong>Error:</strong> {result.error}
+                                </div>
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    backgroundColor: "rgba(16, 185, 129, 0.1)",
+                                    color: "#059669",
+                                    border: "2px solid rgba(16, 185, 129, 0.2)",
+                                    borderRadius: "12px",
+                                    padding: "1rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                <span style={{ fontSize: "20px" }}>✅</span>
+                                <div>
+                                    <strong>Success!</strong> Joined campaign "
+                                    {result.campaign?.name}". Redirecting to seat...
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </main>
     );
 }

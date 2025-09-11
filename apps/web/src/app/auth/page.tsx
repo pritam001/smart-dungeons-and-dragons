@@ -74,39 +74,76 @@ export default function AuthPage() {
     return (
         <main
             style={{
-                padding: 24,
-                maxWidth: 400,
-                margin: "0 auto",
-                paddingTop: 80,
+                minHeight: "100vh",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "2rem",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             }}
         >
-            <h1 style={{ textAlign: "center", marginBottom: 32 }}>DnD AI</h1>
-
             <div
                 style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 8,
-                    padding: 32,
-                    backgroundColor: "#f9f9f9",
+                    width: "100%",
+                    maxWidth: "420px",
+                    background: "rgba(255, 255, 255, 0.95)",
+                    backdropFilter: "blur(10px)",
+                    borderRadius: "20px",
+                    padding: "3rem",
+                    boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15)",
                 }}
             >
+                <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+                    <h1
+                        style={{
+                            fontSize: "3rem",
+                            fontWeight: "800",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            margin: "0 0 0.5rem 0",
+                        }}
+                    >
+                        ⚔️ DnD AI
+                    </h1>
+                    <p
+                        style={{
+                            color: "#64748b",
+                            fontSize: "1.1rem",
+                            margin: 0,
+                        }}
+                    >
+                        Your AI-powered D&D companion
+                    </p>
+                </div>
+
+                {/* Tab Buttons */}
                 <div
                     style={{
                         display: "flex",
-                        marginBottom: 24,
-                        borderBottom: "1px solid #ddd",
+                        marginBottom: "2rem",
+                        backgroundColor: "#f1f5f9",
+                        borderRadius: "12px",
+                        padding: "4px",
                     }}
                 >
                     <button
                         onClick={() => setMode("login")}
                         style={{
                             flex: 1,
-                            padding: "12px 0",
+                            padding: "0.75rem",
                             border: "none",
-                            background: mode === "login" ? "#007bff" : "transparent",
-                            color: mode === "login" ? "white" : "#666",
+                            background:
+                                mode === "login"
+                                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                                    : "transparent",
+                            color: mode === "login" ? "white" : "#64748b",
                             cursor: "pointer",
-                            borderRadius: "4px 0 0 0",
+                            borderRadius: "8px",
+                            fontWeight: "600",
+                            fontSize: "0.95rem",
+                            transition: "all 0.2s ease",
                         }}
                     >
                         Login
@@ -115,12 +152,18 @@ export default function AuthPage() {
                         onClick={() => setMode("register")}
                         style={{
                             flex: 1,
-                            padding: "12px 0",
+                            padding: "0.75rem",
                             border: "none",
-                            background: mode === "register" ? "#007bff" : "transparent",
-                            color: mode === "register" ? "white" : "#666",
+                            background:
+                                mode === "register"
+                                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                                    : "transparent",
+                            color: mode === "register" ? "white" : "#64748b",
                             cursor: "pointer",
-                            borderRadius: "0 4px 0 0",
+                            borderRadius: "8px",
+                            fontWeight: "600",
+                            fontSize: "0.95rem",
+                            transition: "all 0.2s ease",
                         }}
                     >
                         Register
@@ -129,10 +172,18 @@ export default function AuthPage() {
 
                 <form
                     onSubmit={handleSubmit}
-                    style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                    style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
                 >
                     <div>
-                        <label style={{ display: "block", marginBottom: 4, fontWeight: "bold" }}>
+                        <label
+                            style={{
+                                display: "block",
+                                marginBottom: "0.5rem",
+                                fontWeight: "600",
+                                fontSize: "14px",
+                                color: "#374151",
+                            }}
+                        >
                             Username
                         </label>
                         <input
