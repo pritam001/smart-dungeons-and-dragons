@@ -138,6 +138,46 @@ export default function DashboardPage() {
                         </p>
                     </div>
                 </Link>
+
+                <Link href="/my-characters" style={{ textDecoration: "none" }}>
+                    <div
+                        style={{
+                            border: "2px solid #6f42c1",
+                            borderRadius: 8,
+                            padding: 32,
+                            textAlign: "center",
+                            cursor: "pointer",
+                            backgroundColor: "#f8f6ff",
+                            transition: "background-color 0.2s",
+                        }}
+                    >
+                        <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
+                        <h2 style={{ color: "#6f42c1", margin: "0 0 8px 0" }}>My Characters</h2>
+                        <p style={{ color: "#666", margin: 0 }}>
+                            View and manage your character sheets
+                        </p>
+                    </div>
+                </Link>
+
+                <Link href="/dice-roller" style={{ textDecoration: "none" }}>
+                    <div
+                        style={{
+                            border: "2px solid #ffc107",
+                            borderRadius: 8,
+                            padding: 32,
+                            textAlign: "center",
+                            cursor: "pointer",
+                            backgroundColor: "#fffbf0",
+                            transition: "background-color 0.2s",
+                        }}
+                    >
+                        <div style={{ fontSize: 48, marginBottom: 16 }}>�</div>
+                        <h2 style={{ color: "#856404", margin: "0 0 8px 0" }}>Dice Roller</h2>
+                        <p style={{ color: "#666", margin: 0 }}>
+                            Roll dice for your characters and campaigns
+                        </p>
+                    </div>
+                </Link>
             </div>
 
             <div

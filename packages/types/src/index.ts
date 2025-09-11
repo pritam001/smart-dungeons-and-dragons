@@ -142,3 +142,324 @@ export interface AuthContext {
     playerId: PlayerId;
     token: string;
 }
+
+// D&D Character Management Types
+export type CharacterId = string;
+
+export interface CharacterStats {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+}
+
+export interface CharacterModifiers {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+}
+
+export interface CharacterSkills {
+    acrobatics: number;
+    animalHandling: number;
+    arcana: number;
+    athletics: number;
+    deception: number;
+    history: number;
+    insight: number;
+    intimidation: number;
+    investigation: number;
+    medicine: number;
+    nature: number;
+    perception: number;
+    performance: number;
+    persuasion: number;
+    religion: number;
+    sleightOfHand: number;
+    stealth: number;
+    survival: number;
+}
+
+export interface CharacterSavingThrows {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+}
+
+export interface CharacterHitPoints {
+    current: number;
+    maximum: number;
+    temporary: number;
+}
+
+export interface CharacterEquipment {
+    weapons: string[];
+    armor: string[];
+    tools: string[];
+    other: string[];
+}
+
+export interface CharacterSpell {
+    name: string;
+    level: number;
+    school: string;
+    description: string;
+    prepared?: boolean;
+}
+
+export interface CharacterSpellcasting {
+    spellcastingAbility?: keyof CharacterStats;
+    spellSaveDC?: number;
+    spellAttackBonus?: number;
+    spellSlots: {
+        level1: number;
+        level2: number;
+        level3: number;
+        level4: number;
+        level5: number;
+        level6: number;
+        level7: number;
+        level8: number;
+        level9: number;
+    };
+    spellSlotsUsed: {
+        level1: number;
+        level2: number;
+        level3: number;
+        level4: number;
+        level5: number;
+        level6: number;
+        level7: number;
+        level8: number;
+        level9: number;
+    };
+    knownSpells: CharacterSpell[];
+    preparedSpells: CharacterSpell[];
+}
+
+export interface CharacterBackground {
+    name: string;
+    description: string;
+    skillProficiencies: string[];
+    toolProficiencies: string[];
+    languages: string[];
+    features: string[];
+}
+
+export interface CharacterClass {
+    name: string;
+    level: number;
+    hitDie: string;
+    primaryAbility: keyof CharacterStats;
+    savingThrowProficiencies: (keyof CharacterStats)[];
+    skillProficiencies: (keyof CharacterSkills)[];
+    features: string[];
+    subclass?: string;
+}
+
+export interface CharacterRace {
+    name: string;
+    subrace?: string;
+    abilityScoreIncrease: Partial<CharacterStats>;
+    traits: string[];
+    languages: string[];
+    proficiencies: string[];
+}
+
+export interface CharacterSheet {
+    id: CharacterId;
+    campaignId: CampaignId;
+    playerId: PlayerId;
+    seatId: string;
+
+    // Basic Information
+    name: string;
+    race: CharacterRace;
+    characterClass: CharacterClass;
+    background: CharacterBackground;
+    level: number;
+    experiencePoints: number;
+
+    // Core Stats
+    stats: CharacterStats;
+    modifiers: CharacterModifiers;
+    proficiencyBonus: number;
+
+    // Combat Stats
+    hitPoints: CharacterHitPoints;
+    armorClass: number;
+    initiative: number;
+    speed: number;
+
+    // Skills and Saves
+    skills: CharacterSkills;
+    savingThrows: CharacterSavingThrows;
+    skillProficiencies: (keyof CharacterSkills)[];
+    savingThrowProficiencies: (keyof CharacterStats)[];
+
+    // Equipment and Inventory
+    equipment: CharacterEquipment;
+    currency: {
+        copper: number;
+        silver: number;
+        gold: number;
+        platinum: number;
+    };
+
+    // Spellcasting (optional)
+    spellcasting?: CharacterSpellcasting;
+
+    // Character Details
+    personality: {
+        traits: string[];
+        ideals: string[];
+        bonds: string[];
+        flaws: string[];
+    };
+    appearance: {
+        age: number;
+        height: string;
+        weight: string;
+        eyes: string;
+        skin: string;
+        hair: string;
+        description: string;
+    };
+    backstory: string;
+
+    // Metadata
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+}
+
+// Character Creation/Update Requests
+export interface CreateCharacterRequest {
+    campaignId: CampaignId;
+    seatId: string;
+    name: string;
+    race: CharacterRace;
+    characterClass: CharacterClass;
+    background: CharacterBackground;
+    stats: CharacterStats;
+    personality?: {
+        traits: string[];
+        ideals: string[];
+        bonds: string[];
+        flaws: string[];
+    };
+    appearance?: {
+        age: number;
+        height: string;
+        weight: string;
+        eyes: string;
+        skin: string;
+        hair: string;
+        description: string;
+    };
+    backstory?: string;
+}
+
+export interface UpdateCharacterRequest {
+    name?: string;
+    level?: number;
+    experiencePoints?: number;
+    stats?: Partial<CharacterStats>;
+    hitPoints?: Partial<CharacterHitPoints>;
+    armorClass?: number;
+    equipment?: Partial<CharacterEquipment>;
+    currency?: Partial<{
+        copper: number;
+        silver: number;
+        gold: number;
+        platinum: number;
+    }>;
+    personality?: Partial<{
+        traits: string[];
+        ideals: string[];
+        bonds: string[];
+        flaws: string[];
+    }>;
+    appearance?: Partial<{
+        age: number;
+        height: string;
+        weight: string;
+        eyes: string;
+        skin: string;
+        hair: string;
+        description: string;
+    }>;
+    backstory?: string;
+    spellcasting?: Partial<CharacterSpellcasting>;
+}
+
+// D&D Dice Rolling System Types
+export type DiceType = "d4" | "d6" | "d8" | "d10" | "d12" | "d20" | "d100";
+
+export interface DiceRoll {
+    id: string;
+    notation: string; // e.g., "2d6+3", "1d20", "3d8+5"
+    dice: DiceResult[];
+    modifier: number;
+    total: number;
+    advantage?: boolean;
+    disadvantage?: boolean;
+    criticalSuccess: boolean;
+    criticalFailure: boolean;
+    timestamp: string;
+}
+
+export interface DiceResult {
+    die: DiceType;
+    value: number;
+    isMax: boolean;
+    isMin: boolean;
+}
+
+export interface RollRequest {
+    notation: string;
+    rollType?: RollType;
+    characterId?: CharacterId;
+    skillOrSave?: keyof CharacterSkills | keyof CharacterSavingThrows;
+    advantage?: boolean;
+    disadvantage?: boolean;
+    customModifier?: number;
+    description?: string;
+}
+
+export type RollType =
+    | "damage"
+    | "attack"
+    | "ability-check"
+    | "saving-throw"
+    | "skill-check"
+    | "initiative"
+    | "hit-dice"
+    | "death-save"
+    | "custom";
+
+export interface CharacterRoll extends DiceRoll {
+    characterId: CharacterId;
+    characterName: string;
+    rollType: RollType;
+    abilityOrSkill?: string;
+    description?: string;
+}
+
+export interface CampaignRollHistory {
+    campaignId: CampaignId;
+    rolls: CharacterRoll[];
+    lastUpdated: string;
+}
+
+export interface CharacterListResponse {
+    characters: CharacterSheet[];
+}

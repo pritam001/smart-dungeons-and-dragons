@@ -88,7 +88,49 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                     {seat.ai?.enabled ? seat.ai.modelId || "Enabled" : "Off"}
                                 </td>
                                 <td style={{ border: "1px solid #555", padding: 4 }}>
-                                    <button onClick={() => toggleAI(seat.seatId)}>Toggle AI</button>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        <button onClick={() => toggleAI(seat.seatId)}>
+                                            Toggle AI
+                                        </button>
+                                        {seat.humanPlayerId &&
+                                            !seat.characterId &&
+                                            seat.role === "player" && (
+                                                <button
+                                                    onClick={() =>
+                                                        (window.location.href = `/create-character?campaignId=${state.campaign?.id}&seatId=${seat.seatId}`)
+                                                    }
+                                                    style={{
+                                                        backgroundColor: "#28a745",
+                                                        color: "white",
+                                                        border: "none",
+                                                        padding: "4px 8px",
+                                                        borderRadius: 4,
+                                                        fontSize: 12,
+                                                        cursor: "pointer",
+                                                    }}
+                                                >
+                                                    Create Character
+                                                </button>
+                                            )}
+                                        {seat.characterId && (
+                                            <button
+                                                onClick={() =>
+                                                    (window.location.href = `/character/${seat.characterId}`)
+                                                }
+                                                style={{
+                                                    backgroundColor: "#007bff",
+                                                    color: "white",
+                                                    border: "none",
+                                                    padding: "4px 8px",
+                                                    borderRadius: 4,
+                                                    fontSize: 12,
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                View Character
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         );

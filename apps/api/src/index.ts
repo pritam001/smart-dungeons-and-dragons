@@ -8,8 +8,18 @@ import {
     updateSeatAI,
     assignSeat,
     listCampaigns,
+    createCharacter,
+    getCharacter,
+    updateCharacter,
+    getCharactersByCampaign,
+    getCharactersByPlayer,
+    rollDiceForCharacter,
+    rollCustomDice,
+    rollPresetDice,
+    getCampaignRollHistory,
 } from "./repositories.js";
 import { registerUser, loginUser, verifyToken, extractTokenFromHeader } from "./auth.js";
+import { isValidDiceNotation, getDiceSuggestions } from "./diceRoller.js";
 
 const fastify = Fastify({ logger: true });
 await fastify.register(cors, { origin: true });
@@ -153,6 +163,471 @@ fastify.post("/campaigns/:id/seat/human", async (req, reply) => {
 });
 
 fastify.get("/campaigns", async () => await listCampaigns());
+
+// Character routes
+fastify.post("/characters", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const schema = z.object({
+        campaignId: z.string(),
+        seatId: z.string(),
+        name: z.string().min(1).max(100),
+        race: z.object({
+            name: z.string(),
+            subrace: z.string().optional(),
+            abilityScoreIncrease: z.object({
+                strength: z.number().optional(),
+                dexterity: z.number().optional(),
+                constitution: z.number().optional(),
+                intelligence: z.number().optional(),
+                wisdom: z.number().optional(),
+                charisma: z.number().optional(),
+            }),
+            traits: z.array(z.string()),
+            languages: z.array(z.string()),
+            proficiencies: z.array(z.string()),
+        }),
+        characterClass: z.object({
+            name: z.string(),
+            level: z.number().int().min(1).max(20),
+            hitDie: z.string(),
+            primaryAbility: z.enum([
+                "strength",
+                "dexterity",
+                "constitution",
+                "intelligence",
+                "wisdom",
+                "charisma",
+            ]),
+            savingThrowProficiencies: z.array(
+                z.enum([
+                    "strength",
+                    "dexterity",
+                    "constitution",
+                    "intelligence",
+                    "wisdom",
+                    "charisma",
+                ]),
+            ),
+            skillProficiencies: z.array(
+                z.enum([
+                    "acrobatics",
+                    "animalHandling",
+                    "arcana",
+                    "athletics",
+                    "deception",
+                    "history",
+                    "insight",
+                    "intimidation",
+                    "investigation",
+                    "medicine",
+                    "nature",
+                    "perception",
+                    "performance",
+                    "persuasion",
+                    "religion",
+                    "sleightOfHand",
+                    "stealth",
+                    "survival",
+                ]),
+            ),
+            features: z.array(z.string()),
+            subclass: z.string().optional(),
+        }),
+        background: z.object({
+            name: z.string(),
+            description: z.string(),
+            skillProficiencies: z.array(z.string()),
+            toolProficiencies: z.array(z.string()),
+            languages: z.array(z.string()),
+            features: z.array(z.string()),
+        }),
+        stats: z.object({
+            strength: z.number().int().min(1).max(30),
+            dexterity: z.number().int().min(1).max(30),
+            constitution: z.number().int().min(1).max(30),
+            intelligence: z.number().int().min(1).max(30),
+            wisdom: z.number().int().min(1).max(30),
+            charisma: z.number().int().min(1).max(30),
+        }),
+        appearance: z
+            .object({
+                age: z.number().optional(),
+                height: z.string().optional(),
+                weight: z.string().optional(),
+                eyes: z.string().optional(),
+                skin: z.string().optional(),
+                hair: z.string().optional(),
+                description: z.string().optional(),
+            })
+            .optional(),
+        personality: z
+            .object({
+                traits: z.array(z.string()).optional(),
+                ideals: z.array(z.string()).optional(),
+                bonds: z.array(z.string()).optional(),
+                flaws: z.array(z.string()).optional(),
+            })
+            .optional(),
+        backstory: z.string().optional(),
+    });
+
+    try {
+        const parsed = schema.parse(req.body);
+
+        // Convert to CreateCharacterRequest format with proper defaults
+        const characterData: any = {
+            ...parsed,
+            personality: parsed.personality
+                ? {
+                      traits: parsed.personality.traits || [],
+                      ideals: parsed.personality.ideals || [],
+                      bonds: parsed.personality.bonds || [],
+                      flaws: parsed.personality.flaws || [],
+                  }
+                : undefined,
+            appearance: parsed.appearance
+                ? {
+                      age: parsed.appearance.age || 25,
+                      height: parsed.appearance.height || "5'8\"",
+                      weight: parsed.appearance.weight || "150 lbs",
+                      eyes: parsed.appearance.eyes || "Brown",
+                      skin: parsed.appearance.skin || "Medium",
+                      hair: parsed.appearance.hair || "Brown",
+                      description: parsed.appearance.description || "",
+                  }
+                : undefined,
+        };
+
+        const character = await createCharacter(characterData, user);
+        return character;
+    } catch (error: any) {
+        if (
+            error.message.includes("Campaign not found") ||
+            error.message.includes("Seat not found") ||
+            error.message.includes("occupied")
+        ) {
+            return reply.status(400).send({ error: error.message });
+        }
+        return reply.status(400).send({ error: "Invalid character data" });
+    }
+});
+
+fastify.get("/characters/:id", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    try {
+        const character = await getCharacter(params.id, user);
+        if (!character) {
+            return reply.status(404).send({ error: "Character not found" });
+        }
+        return character;
+    } catch (error: any) {
+        return reply.status(403).send({ error: error.message });
+    }
+});
+
+fastify.put("/characters/:id", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    // Flexible update schema - allow partial updates of most character fields
+    const schema = z.object({
+        name: z.string().min(1).max(100).optional(),
+        level: z.number().int().min(1).max(20).optional(),
+        experiencePoints: z.number().int().min(0).optional(),
+        hitPoints: z
+            .object({
+                current: z.number().int().min(0),
+                maximum: z.number().int().min(1),
+                temporary: z.number().int().min(0),
+            })
+            .optional(),
+        equipment: z
+            .object({
+                weapons: z.array(z.string()).optional(),
+                armor: z.array(z.string()).optional(),
+                tools: z.array(z.string()).optional(),
+                other: z.array(z.string()).optional(),
+            })
+            .optional(),
+        currency: z
+            .object({
+                copper: z.number().int().min(0).optional(),
+                silver: z.number().int().min(0).optional(),
+                gold: z.number().int().min(0).optional(),
+                platinum: z.number().int().min(0).optional(),
+            })
+            .optional(),
+        personality: z
+            .object({
+                traits: z.array(z.string()).optional(),
+                ideals: z.array(z.string()).optional(),
+                bonds: z.array(z.string()).optional(),
+                flaws: z.array(z.string()).optional(),
+            })
+            .optional(),
+        appearance: z
+            .object({
+                age: z.number().optional(),
+                height: z.string().optional(),
+                weight: z.string().optional(),
+                eyes: z.string().optional(),
+                skin: z.string().optional(),
+                hair: z.string().optional(),
+                description: z.string().optional(),
+            })
+            .optional(),
+        backstory: z.string().optional(),
+    });
+
+    try {
+        const updates = schema.parse(req.body);
+        const character = await updateCharacter(params.id, updates as any, user);
+        if (!character) {
+            return reply.status(404).send({ error: "Character not found" });
+        }
+        return character;
+    } catch (error: any) {
+        if (error.message.includes("Access denied")) {
+            return reply.status(403).send({ error: error.message });
+        }
+        return reply.status(400).send({ error: "Invalid update data" });
+    }
+});
+
+fastify.get("/campaigns/:id/characters", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    try {
+        const characters = await getCharactersByCampaign(params.id, user);
+        return { characters };
+    } catch (error: any) {
+        if (error.message.includes("Campaign not found")) {
+            return reply.status(404).send({ error: error.message });
+        }
+        return reply.status(403).send({ error: error.message });
+    }
+});
+
+fastify.get("/my-characters", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const characters = await getCharactersByPlayer(user);
+    return { characters };
+});
+
+// Dice Rolling Endpoints
+fastify.post("/roll/character", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const schema = z.object({
+        characterId: z.string(),
+        notation: z.string(),
+        rollType: z
+            .enum([
+                "damage",
+                "attack",
+                "ability-check",
+                "saving-throw",
+                "skill-check",
+                "initiative",
+                "hit-dice",
+                "death-save",
+                "custom",
+            ])
+            .optional(),
+        skillOrSave: z.string().optional(),
+        advantage: z.boolean().optional(),
+        disadvantage: z.boolean().optional(),
+        customModifier: z.number().optional(),
+        description: z.string().optional(),
+    });
+
+    try {
+        const parsed = schema.parse(req.body);
+
+        if (!isValidDiceNotation(parsed.notation)) {
+            return reply.status(400).send({ error: "Invalid dice notation" });
+        }
+
+        const roll = await rollDiceForCharacter(parsed as any, user);
+        return { roll };
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message || "Failed to roll dice" });
+    }
+});
+
+fastify.post("/roll/preset/:type", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const paramsSchema = z.object({
+        type: z.enum([
+            "attack",
+            "save",
+            "skill",
+            "ability",
+            "initiative",
+            "death-save",
+            "hit-dice",
+        ]),
+    });
+
+    const bodySchema = z.object({
+        characterId: z.string(),
+        ability: z.string().optional(),
+        advantage: z.boolean().optional(),
+        disadvantage: z.boolean().optional(),
+    });
+
+    try {
+        const params = paramsSchema.parse(req.params);
+        const body = bodySchema.parse(req.body);
+
+        // Get character to validate access
+        const character = await getCharacter(body.characterId, user);
+        if (!character) {
+            return reply.status(404).send({ error: "Character not found" });
+        }
+
+        const roll = await rollPresetDice(
+            character,
+            params.type,
+            body.ability as any,
+            body.advantage,
+            body.disadvantage,
+        );
+
+        return { roll };
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message || "Failed to roll dice" });
+    }
+});
+
+fastify.post("/roll/custom", async (req, reply) => {
+    const schema = z.object({
+        notation: z.string(),
+        advantage: z.boolean().optional(),
+        disadvantage: z.boolean().optional(),
+        description: z.string().optional(),
+    });
+
+    try {
+        const parsed = schema.parse(req.body);
+
+        if (!isValidDiceNotation(parsed.notation)) {
+            return reply.status(400).send({ error: "Invalid dice notation" });
+        }
+
+        const roll = await rollCustomDice(
+            parsed.notation,
+            parsed.advantage,
+            parsed.disadvantage,
+            parsed.description,
+        );
+
+        return { roll };
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message || "Failed to roll dice" });
+    }
+});
+
+fastify.get("/campaigns/:id/rolls", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const paramsSchema = z.object({
+        id: z.string(),
+    });
+
+    const querySchema = z.object({
+        limit: z.string().optional(),
+    });
+
+    try {
+        const params = paramsSchema.parse(req.params);
+        const query = querySchema.parse(req.query);
+
+        const limit = query.limit ? parseInt(query.limit) : 50;
+        const rolls = await getCampaignRollHistory(params.id, user, limit);
+
+        return { rolls };
+    } catch (error: any) {
+        return reply.status(400).send({ error: error.message || "Failed to get roll history" });
+    }
+});
+
+fastify.get("/dice/suggestions", async () => {
+    return { suggestions: getDiceSuggestions() };
+});
 
 const port = Number(process.env.PORT || 13333);
 fastify.listen({ port, host: "0.0.0.0" }).catch((err) => {
