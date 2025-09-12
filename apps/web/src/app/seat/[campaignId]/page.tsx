@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AIModelMeta, CampaignConfig } from "@dnd-ai/types";
+import { PageContainer, ContentWrapper, Button, Card } from "../../../components/ui";
 
 interface SeatState {
     campaign?: CampaignConfig;
@@ -109,195 +110,68 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
 
     if (state.loading) {
         return (
-            <main
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
-                <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>⏳</div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-lg">
+                <div className="text-center">
+                    <div className="text-5xl mb-4">⏳</div>
                     Loading campaign...
                 </div>
-            </main>
+            </div>
         );
     }
 
     if (!state.campaign) {
         return (
-            <main
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
-                <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>❌</div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-lg">
+                <div className="text-center">
+                    <div className="text-5xl mb-4">❌</div>
                     Campaign not found.
                 </div>
-            </main>
+            </div>
         );
     }
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <PageContainer>
+            <ContentWrapper>
                 {/* Header */}
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "2rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl mb-8 flex justify-between items-center">
                     <div>
-                        <h1
-                            style={{
-                                fontSize: "2.5rem",
-                                fontWeight: "700",
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                margin: "0 0 0.5rem 0",
-                            }}
-                        >
+                        <h1 className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 bg-clip-text text-transparent mb-2">
                             🏛️ {state.campaign.name}
                         </h1>
-                        <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-                            <div
-                                style={{
-                                    fontFamily: "monospace",
-                                    fontSize: "1.2rem",
-                                    fontWeight: "bold",
-                                    color: "#667eea",
-                                    backgroundColor: "rgba(102, 126, 234, 0.1)",
-                                    padding: "0.5rem 1rem",
-                                    borderRadius: "8px",
-                                }}
-                            >
+                        <div className="flex gap-8 items-center">
+                            <div className="font-mono text-xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-lg">
                                 Room Code: {state.campaign.roomCode}
                             </div>
                             {state.isGM && (
-                                <div
-                                    style={{
-                                        color: "#10b981",
-                                        fontWeight: "600",
-                                        fontSize: "1.1rem",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "0.5rem",
-                                    }}
-                                >
+                                <div className="text-green-600 font-semibold text-lg flex items-center gap-2">
                                     🛡️ Game Master Access
                                 </div>
                             )}
                         </div>
                     </div>
-                    <button
+                    <Button
                         onClick={() => router.back()}
-                        style={{
-                            padding: "0.75rem 1.5rem",
-                            background: "rgba(255, 255, 255, 0.2)",
-                            color: "#374151",
-                            border: "2px solid #e5e7eb",
-                            borderRadius: "12px",
-                            cursor: "pointer",
-                            fontWeight: "600",
-                            transition: "all 0.2s ease",
-                            fontSize: "0.95rem",
-                            backdropFilter: "blur(10px)",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
+                        variant="secondary"
+                        className="hover:transform hover:-translate-y-1"
                     >
                         ← Back
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Add Seats Section - GM Only */}
                 {state.isGM && (
-                    <div
-                        style={{
-                            marginBottom: "2rem",
-                            background: "rgba(255, 255, 255, 0.95)",
-                            borderRadius: "16px",
-                            padding: "2rem",
-                            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                            backdropFilter: "blur(10px)",
-                            border: "2px solid rgba(251, 191, 36, 0.3)",
-                        }}
-                    >
-                        <h3
-                            style={{
-                                marginTop: 0,
-                                marginBottom: "1rem",
-                                fontSize: "1.5rem",
-                                fontWeight: "600",
-                                color: "#374151",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                            }}
-                        >
+                    <Card className="mb-8 border-2 border-yellow-300">
+                        <h3 className="mt-0 mb-4 text-xl font-semibold text-gray-700 flex items-center gap-2">
                             ➕ Add More Seats
                         </h3>
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "1rem",
-                                alignItems: "center",
-                                flexWrap: "wrap",
-                            }}
-                        >
-                            <div
-                                style={{
-                                    fontSize: "16px",
-                                    color: "#6b7280",
-                                    fontWeight: "500",
-                                }}
-                            >
+                        <div className="flex gap-4 items-center flex-wrap">
+                            <div className="text-base text-gray-500 font-medium">
                                 Current seats: {state.campaign.seats.length}/8
                             </div>
                             <select
                                 id="additional-seat-count"
-                                style={{
-                                    padding: "12px 16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "8px",
-                                    fontSize: "16px",
-                                    fontWeight: "500",
-                                    backgroundColor: "white",
-                                    minWidth: "200px",
-                                }}
+                                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base font-medium bg-white min-w-[200px]"
                                 disabled={state.campaign.seats.length >= 8}
                             >
                                 <option value="">Select number to add...</option>
@@ -395,54 +269,21 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                 ➕ Add Seats
                             </button>
                         </div>
-                        <p
-                            style={{
-                                fontSize: "14px",
-                                color: "#6b7280",
-                                margin: "1rem 0 0 0",
-                                lineHeight: "1.5",
-                            }}
-                        >
+                        <p className="text-sm text-gray-500 mt-4 leading-relaxed">
                             {state.campaign.seats.length >= 8
                                 ? "🚫 Maximum seat limit reached (8 seats including GM)."
                                 : "💡 Add more empty seats that can be assigned to players later."}
                         </p>
-                    </div>
+                    </Card>
                 )}
 
                 {/* Seats Grid */}
-                <div
-                    style={{
-                        background: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                        backdropFilter: "blur(10px)",
-                        marginBottom: "2rem",
-                    }}
-                >
-                    <h3
-                        style={{
-                            marginTop: 0,
-                            marginBottom: "1.5rem",
-                            fontSize: "1.5rem",
-                            fontWeight: "600",
-                            color: "#374151",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                        }}
-                    >
+                <Card className="mb-8">
+                    <h3 className="mt-0 mb-6 text-xl font-semibold text-gray-700 flex items-center gap-2">
                         🪑 Campaign Seats
                     </h3>
 
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-                            gap: "1.5rem",
-                        }}
-                    >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {state.campaign.seats.map((seat) => {
                             const isCurrentPlayerSeat =
                                 seat.humanPlayerId === state.currentUser?.id;
@@ -760,61 +601,24 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                             );
                         })}
                     </div>
-                </div>
+                </Card>
 
                 {/* All Characters Section */}
-                <div
-                    style={{
-                        background: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                        backdropFilter: "blur(10px)",
-                    }}
-                >
-                    <h3
-                        style={{
-                            marginTop: 0,
-                            marginBottom: "1rem",
-                            fontSize: "1.5rem",
-                            fontWeight: "600",
-                            color: "#374151",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                        }}
-                    >
+                <Card>
+                    <h3 className="mt-0 mb-4 text-xl font-semibold text-gray-700 flex items-center gap-2">
                         🎭 All Campaign Characters
                     </h3>
-                    <p
-                        style={{
-                            color: "#6b7280",
-                            fontSize: "16px",
-                            marginBottom: "1.5rem",
-                            lineHeight: "1.5",
-                        }}
-                    >
+                    <p className="text-gray-500 text-base mb-6 leading-relaxed">
                         {state.isGM
                             ? "🛡️ As GM, you can view and edit all characters."
                             : "👁️ You can view all characters but can only edit your own."}
                     </p>
 
                     {state.campaign.seats.filter((seat) => seat.characterId).length === 0 ? (
-                        <div
-                            style={{
-                                textAlign: "center",
-                                padding: "3rem",
-                                color: "#9ca3af",
-                                backgroundColor: "#f9fafb",
-                                borderRadius: "12px",
-                                border: "2px dashed #e5e7eb",
-                            }}
-                        >
-                            <div style={{ fontSize: "48px", marginBottom: "1rem" }}>🎭</div>
-                            <h4 style={{ margin: "0 0 0.5rem 0", color: "#6b7280" }}>
-                                No Characters Created Yet
-                            </h4>
-                            <p style={{ margin: 0 }}>
+                        <div className="text-center p-12 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                            <div className="text-5xl mb-4">🎭</div>
+                            <h4 className="m-0 mb-2 text-gray-500">No Characters Created Yet</h4>
+                            <p className="m-0">
                                 Create characters for your seats to get started with the campaign!
                             </p>
                         </div>
@@ -932,8 +736,8 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                 ))}
                         </div>
                     )}
-                </div>
-            </div>
-        </main>
+                </Card>
+            </ContentWrapper>
+        </PageContainer>
     );
 }

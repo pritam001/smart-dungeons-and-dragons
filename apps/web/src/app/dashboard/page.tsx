@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { PageContainer, ContentWrapper, Button, Card } from "../../components/ui";
 
 interface User {
     id: string;
@@ -60,7 +61,7 @@ export default function DashboardPage() {
     }
 
     if (loading) {
-        return <main style={{ padding: 24 }}>Loading...</main>;
+        return <main className="p-6">Loading...</main>;
     }
 
     if (!user) {
@@ -68,212 +69,95 @@ export default function DashboardPage() {
     }
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-            }}
-        >
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "3rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
+        <PageContainer>
+            <ContentWrapper>
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl mb-12 flex justify-between items-center">
                     <div>
-                        <h1
-                            style={{
-                                fontSize: "2.5rem",
-                                fontWeight: "700",
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                margin: "0 0 0.5rem 0",
-                            }}
-                        >
+                        <h1 className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 bg-clip-text text-transparent mb-2">
                             Welcome, {user.displayName}! 🎲
                         </h1>
-                        <p
-                            style={{
-                                color: "#64748b",
-                                margin: 0,
-                                fontSize: "1.1rem",
-                            }}
-                        >
-                            @{user.username}
-                        </p>
+                        <p className="text-slate-500 text-lg">@{user.username}</p>
                     </div>
-                    <button
+                    <Button
                         onClick={handleLogout}
-                        style={{
-                            padding: "0.75rem 1.5rem",
-                            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "12px",
-                            cursor: "pointer",
-                            fontWeight: "600",
-                            transition: "all 0.2s ease",
-                            fontSize: "0.95rem",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                            e.currentTarget.style.boxShadow = "0 10px 20px rgba(239, 68, 68, 0.3)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.boxShadow = "none";
-                        }}
+                        variant="danger"
+                        className="hover:transform hover:-translate-y-1 hover:shadow-lg"
                     >
                         Logout
-                    </button>
+                    </Button>
                 </div>
 
-                <div style={{ display: "grid", gap: 24, gridTemplateColumns: "1fr 1fr 1fr" }}>
-                    <Link href="/create" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #007bff",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#f8f9ff",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>🎲</div>
-                            <h2 style={{ color: "#007bff", margin: "0 0 8px 0" }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Link href="/create" className="no-underline">
+                        <Card className="border-2 border-blue-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">🎲</div>
+                            <h2 className="text-blue-600 text-xl font-semibold mb-2">
                                 Create Campaign
                             </h2>
-                            <p style={{ color: "#666", margin: 0 }}>
+                            <p className="text-gray-600">
                                 Start a new D&D adventure with AI assistance
                             </p>
-                        </div>
+                        </Card>
                     </Link>
 
-                    <Link href="/my-campaigns" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #dc3545",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#fff8f8",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>🛡️</div>
-                            <h2 style={{ color: "#dc3545", margin: "0 0 8px 0" }}>My Campaigns</h2>
-                            <p style={{ color: "#666", margin: 0 }}>
-                                Manage campaigns where you're the GM
-                            </p>
-                        </div>
+                    <Link href="/my-campaigns" className="no-underline">
+                        <Card className="border-2 border-red-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">🛡️</div>
+                            <h2 className="text-red-600 text-xl font-semibold mb-2">
+                                My Campaigns
+                            </h2>
+                            <p className="text-gray-600">Manage campaigns where you're the GM</p>
+                        </Card>
                     </Link>
 
-                    <Link href="/join" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #28a745",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#f8fff8",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>🗡️</div>
-                            <h2 style={{ color: "#28a745", margin: "0 0 8px 0" }}>Join Campaign</h2>
-                            <p style={{ color: "#666", margin: 0 }}>
-                                Join an existing adventure with friends
-                            </p>
-                        </div>
+                    <Link href="/join" className="no-underline">
+                        <Card className="border-2 border-green-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">🗡️</div>
+                            <h2 className="text-green-600 text-xl font-semibold mb-2">
+                                Join Campaign
+                            </h2>
+                            <p className="text-gray-600">Join an existing adventure with friends</p>
+                        </Card>
                     </Link>
 
-                    <Link href="/my-characters" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #6f42c1",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#f8f6ff",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
-                            <h2 style={{ color: "#6f42c1", margin: "0 0 8px 0" }}>My Characters</h2>
-                            <p style={{ color: "#666", margin: 0 }}>
-                                View and manage your character sheets
-                            </p>
-                        </div>
+                    <Link href="/my-characters" className="no-underline">
+                        <Card className="border-2 border-purple-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">⚔️</div>
+                            <h2 className="text-purple-600 text-xl font-semibold mb-2">
+                                My Characters
+                            </h2>
+                            <p className="text-gray-600">View and manage your character sheets</p>
+                        </Card>
                     </Link>
 
-                    <Link href="/create-character" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #28a745",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#f0fff4",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
-                            <h2 style={{ color: "#155724", margin: "0 0 8px 0" }}>
+                    <Link href="/create-character" className="no-underline">
+                        <Card className="border-2 border-emerald-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">✨</div>
+                            <h2 className="text-emerald-700 text-xl font-semibold mb-2">
                                 Create Character
                             </h2>
-                            <p style={{ color: "#666", margin: 0 }}>
+                            <p className="text-gray-600">
                                 Build a new character for your adventures
                             </p>
-                        </div>
+                        </Card>
                     </Link>
 
-                    <Link href="/dice-roller" style={{ textDecoration: "none" }}>
-                        <div
-                            style={{
-                                border: "2px solid #ffc107",
-                                borderRadius: 8,
-                                padding: 32,
-                                textAlign: "center",
-                                cursor: "pointer",
-                                backgroundColor: "#fffbf0",
-                                transition: "background-color 0.2s",
-                            }}
-                        >
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>�</div>
-                            <h2 style={{ color: "#856404", margin: "0 0 8px 0" }}>Dice Roller</h2>
-                            <p style={{ color: "#666", margin: 0 }}>
+                    <Link href="/dice-roller" className="no-underline">
+                        <Card className="border-2 border-yellow-500 bg-white/10 hover:bg-white transition-colors cursor-pointer text-center">
+                            <div className="text-5xl mb-4">🎯</div>
+                            <h2 className="text-yellow-700 text-xl font-semibold mb-2">
+                                Dice Roller
+                            </h2>
+                            <p className="text-gray-600">
                                 Roll dice for your characters and campaigns
                             </p>
-                        </div>
+                        </Card>
                     </Link>
                 </div>
 
-                <div
-                    style={{
-                        marginTop: 48,
-                        padding: 24,
-                        backgroundColor: "#f8f9fa",
-                        borderRadius: 8,
-                    }}
-                >
-                    <h3>Getting Started</h3>
-                    <ul style={{ color: "#666" }}>
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl mt-12">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800">Getting Started</h3>
+                    <ul className="text-gray-600 space-y-2">
                         <li>
                             <strong>Create Campaign:</strong> Set up a new D&D session with
                             customizable AI assistance
@@ -288,7 +172,7 @@ export default function DashboardPage() {
                         </li>
                     </ul>
                 </div>
-            </div>
-        </main>
+            </ContentWrapper>
+        </PageContainer>
     );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PageContainer, Button, Input } from "../../components/ui";
 
 export default function AuthPage() {
     const [mode, setMode] = useState<"login" | "register">("login");
@@ -72,118 +73,42 @@ export default function AuthPage() {
     }
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div
-                style={{
-                    width: "100%",
-                    maxWidth: "420px",
-                    background: "rgba(255, 255, 255, 0.95)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "20px",
-                    padding: "3rem",
-                    boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15)",
-                }}
-            >
-                <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-                    <h1
-                        style={{
-                            fontSize: "3rem",
-                            fontWeight: "800",
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            margin: "0 0 0.5rem 0",
-                        }}
-                    >
+        <main className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-8 font-sans">
+            <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
+                <div className="text-center mb-10">
+                    <h1 className="text-5xl font-extrabold bg-gradient-to-br from-blue-500 to-purple-600 bg-clip-text text-transparent mb-2">
                         ⚔️ DnD AI
                     </h1>
-                    <p
-                        style={{
-                            color: "#64748b",
-                            fontSize: "1.1rem",
-                            margin: 0,
-                        }}
-                    >
-                        Your AI-powered D&D companion
-                    </p>
+                    <p className="text-slate-500 text-lg">Your AI-powered D&D companion</p>
                 </div>
 
                 {/* Tab Buttons */}
-                <div
-                    style={{
-                        display: "flex",
-                        marginBottom: "2rem",
-                        backgroundColor: "#f1f5f9",
-                        borderRadius: "12px",
-                        padding: "4px",
-                    }}
-                >
+                <div className="flex mb-8 bg-slate-100 rounded-xl p-1">
                     <button
                         onClick={() => setMode("login")}
-                        style={{
-                            flex: 1,
-                            padding: "0.75rem",
-                            border: "none",
-                            background:
-                                mode === "login"
-                                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                                    : "transparent",
-                            color: mode === "login" ? "white" : "#64748b",
-                            cursor: "pointer",
-                            borderRadius: "8px",
-                            fontWeight: "600",
-                            fontSize: "0.95rem",
-                            transition: "all 0.2s ease",
-                        }}
+                        className={`flex-1 py-3 px-4 border-none rounded-lg font-semibold text-sm transition-all duration-200 min-w-0 ${
+                            mode === "login"
+                                ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-md"
+                                : "bg-white text-slate-600 hover:text-slate-800 hover:bg-slate-50 shadow-sm"
+                        }`}
                     >
                         Login
                     </button>
                     <button
                         onClick={() => setMode("register")}
-                        style={{
-                            flex: 1,
-                            padding: "0.75rem",
-                            border: "none",
-                            background:
-                                mode === "register"
-                                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                                    : "transparent",
-                            color: mode === "register" ? "white" : "#64748b",
-                            cursor: "pointer",
-                            borderRadius: "8px",
-                            fontWeight: "600",
-                            fontSize: "0.95rem",
-                            transition: "all 0.2s ease",
-                        }}
+                        className={`flex-1 py-3 px-4 border-none rounded-lg font-semibold text-sm transition-all duration-200 min-w-0 ${
+                            mode === "register"
+                                ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-md"
+                                : "bg-white text-slate-600 hover:text-slate-800 hover:bg-slate-50 shadow-sm"
+                        }`}
                     >
                         Register
                     </button>
                 </div>
 
-                <form
-                    onSubmit={handleSubmit}
-                    style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-                >
+                <form onSubmit={handleSubmit} className="flex flex-col gap-6 min-h-[280px]">
                     <div>
-                        <label
-                            style={{
-                                display: "block",
-                                marginBottom: "0.5rem",
-                                fontWeight: "600",
-                                fontSize: "14px",
-                                color: "#374151",
-                            }}
-                        >
+                        <label className="block mb-2 font-semibold text-sm text-gray-700">
                             Username
                         </label>
                         <input
@@ -192,56 +117,25 @@ export default function AuthPage() {
                             onChange={(e) => setUsername(e.target.value)}
                             required
                             minLength={3}
-                            style={{
-                                width: "100%",
-                                padding: 12,
-                                border: "1px solid #ddd",
-                                borderRadius: 4,
-                                fontSize: 16,
-                            }}
+                            className="w-full p-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                         />
                     </div>
 
                     <div>
-                        <label style={{ display: "block", marginBottom: 4, fontWeight: "bold" }}>
-                            Password
-                        </label>
-                        <div style={{ position: "relative" }}>
+                        <label className="block mb-1 font-bold text-gray-700">Password</label>
+                        <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 minLength={6}
-                                style={{
-                                    width: "100%",
-                                    padding: 12,
-                                    paddingRight: 40,
-                                    border: "1px solid #ddd",
-                                    borderRadius: 4,
-                                    fontSize: 16,
-                                }}
+                                className="w-full p-3 pr-12 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: "absolute",
-                                    right: 12,
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    fontSize: 16,
-                                    color: "#666",
-                                    padding: 0,
-                                    width: 20,
-                                    height: 20,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-transparent border-none cursor-pointer text-base text-gray-600 p-0 w-5 h-5 flex items-center justify-center hover:text-gray-800 transition-colors"
                                 title={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? "🙈" : "👁️"}
@@ -249,39 +143,25 @@ export default function AuthPage() {
                         </div>
                     </div>
 
-                    {mode === "register" && (
-                        <div>
-                            <label
-                                style={{ display: "block", marginBottom: 4, fontWeight: "bold" }}
-                            >
-                                Display Name
-                            </label>
-                            <input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                required
-                                style={{
-                                    width: "100%",
-                                    padding: 12,
-                                    border: "1px solid #ddd",
-                                    borderRadius: 4,
-                                    fontSize: 16,
-                                }}
-                            />
-                        </div>
-                    )}
+                    <div className="min-h-[80px]">
+                        {mode === "register" && (
+                            <div>
+                                <label className="block mb-1 font-bold text-gray-700">
+                                    Display Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    required
+                                    className="w-full p-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     {error && (
-                        <div
-                            style={{
-                                color: "#dc3545",
-                                backgroundColor: "#f8d7da",
-                                border: "1px solid #f5c6cb",
-                                borderRadius: 4,
-                                padding: 12,
-                            }}
-                        >
+                        <div className="text-red-700 bg-red-100 border border-red-300 rounded-lg p-3">
                             {error}
                         </div>
                     )}
@@ -289,16 +169,11 @@ export default function AuthPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        style={{
-                            padding: 12,
-                            backgroundColor: loading ? "#ccc" : "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            fontSize: 16,
-                            fontWeight: "bold",
-                            cursor: loading ? "not-allowed" : "pointer",
-                        }}
+                        className={`p-3 text-white border-none rounded-lg text-base font-bold transition-all duration-200 ${
+                            loading
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                        }`}
                     >
                         {loading ? "Please wait..." : mode === "login" ? "Login" : "Create Account"}
                     </button>

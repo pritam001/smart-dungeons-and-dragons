@@ -33,16 +33,17 @@ export const Button: React.FC<ButtonProps> = ({
 interface CardProps {
     children: React.ReactNode;
     className?: string;
+    transition?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = "" }) => {
-    return (
-        <div
-            className={`p-6 rounded-xl backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:-translate-y-1 bg-white/5 ${className}`}
-        >
-            {children}
-        </div>
-    );
+export const Card: React.FC<CardProps> = ({ children, className = "", transition = false }) => {
+    const baseClasses =
+        "p-6 rounded-xl backdrop-blur-md border border-white/10 shadow-lg bg-white/5";
+    const transitionClasses = transition
+        ? "hover:shadow-xl transition-all duration-300 hover:transform hover:-translate-y-1"
+        : "";
+
+    return <div className={`${baseClasses} ${transitionClasses} ${className}`}>{children}</div>;
 };
 
 // Input Components
