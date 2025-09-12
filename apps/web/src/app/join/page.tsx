@@ -37,7 +37,7 @@ export default function JoinCampaignPage() {
             })
             .then((userData) => {
                 setIsAuthenticated(true);
-                setUserProfile(userData);
+                setUserProfile(userData.user); // Extract the user object from the response
                 loadCampaigns();
             })
             .catch(() => {
@@ -62,8 +62,7 @@ export default function JoinCampaignPage() {
         }
     }
 
-    async function submit(e: React.FormEvent) {
-        e.preventDefault();
+    async function joinCampaign(campaignRoomCode: string) {
         setJoining(true);
         setResult(null);
 
@@ -77,7 +76,7 @@ export default function JoinCampaignPage() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    roomCode,
+                    roomCode: campaignRoomCode,
                     playerDisplayName: userProfile?.displayName || "Player",
                 }),
             });
@@ -105,8 +104,9 @@ export default function JoinCampaignPage() {
         }
     }
 
-    function selectCampaign(campaign: CampaignConfig) {
-        setRoomCode(campaign.roomCode);
+    async function submitPrivateCampaign(e: React.FormEvent) {
+        e.preventDefault();
+        await joinCampaign(roomCode);
     }
 
     if (!isAuthenticated) {
@@ -220,8 +220,8 @@ export default function JoinCampaignPage() {
                             lineHeight: "1.5",
                         }}
                     >
-                        Browse available public campaigns. To join a private campaign, enter its
-                        room code in the form below.
+                        Click the "Join" button on any available public campaign to instantly join,
+                        or use the private campaign section below to enter a room code.
                     </p>
 
                     {loading ? (
@@ -256,78 +256,116 @@ export default function JoinCampaignPage() {
                                     (s) => s.humanPlayerId,
                                 ).length;
                                 const totalSeats = campaign.seats.length;
-                                const isSelected = roomCode === campaign.roomCode;
                                 const isFull = occupiedSeats >= totalSeats;
 
                                 return (
                                     <div
                                         key={campaign.id}
                                         style={{
-                                            border: isSelected
-                                                ? "2px solid #667eea"
-                                                : isFull
-                                                  ? "2px solid #e74c3c"
-                                                  : "2px solid #e9ecef",
+                                            border: isFull
+                                                ? "2px solid #e74c3c"
+                                                : "2px solid #e9ecef",
                                             borderRadius: "12px",
                                             padding: "1.5rem",
-                                            cursor: isFull ? "not-allowed" : "pointer",
-                                            backgroundColor: isSelected
-                                                ? "rgba(102, 126, 234, 0.1)"
-                                                : isFull
-                                                  ? "rgba(231, 76, 60, 0.05)"
-                                                  : "#ffffff",
+                                            backgroundColor: isFull
+                                                ? "rgba(231, 76, 60, 0.05)"
+                                                : "#ffffff",
                                             transition: "all 0.3s ease",
                                             opacity: isFull ? 0.6 : 1,
-                                        }}
-                                        onClick={() => !isFull && selectCampaign(campaign)}
-                                        onMouseEnter={(e) => {
-                                            if (!isFull) {
-                                                e.currentTarget.style.transform =
-                                                    "translateY(-2px)";
-                                                e.currentTarget.style.boxShadow =
-                                                    "0 10px 30px rgba(0,0,0,0.1)";
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isFull) {
-                                                e.currentTarget.style.transform = "translateY(0)";
-                                                e.currentTarget.style.boxShadow = "none";
-                                            }
                                         }}
                                     >
                                         <div
                                             style={{
-                                                fontWeight: "700",
-                                                fontSize: "20px",
-                                                marginBottom: "0.5rem",
-                                                color: "#333",
                                                 display: "flex",
-                                                alignItems: "center",
-                                                gap: "0.5rem",
+                                                justifyContent: "space-between",
+                                                alignItems: "flex-start",
+                                                marginBottom: "1rem",
                                             }}
                                         >
-                                            🏛️ {campaign.name}
-                                            {isFull && (
-                                                <span
-                                                    style={{ fontSize: "14px", color: "#e74c3c" }}
+                                            <div style={{ flex: 1 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: "700",
+                                                        fontSize: "20px",
+                                                        marginBottom: "0.5rem",
+                                                        color: "#333",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "0.5rem",
+                                                    }}
                                                 >
-                                                    • FULL
-                                                </span>
-                                            )}
-                                        </div>
+                                                    🏛️ {campaign.name}
+                                                    {isFull && (
+                                                        <span
+                                                            style={{
+                                                                fontSize: "14px",
+                                                                color: "#e74c3c",
+                                                            }}
+                                                        >
+                                                            • FULL
+                                                        </span>
+                                                    )}
+                                                </div>
 
-                                        {campaign.description && (
-                                            <p
+                                                {campaign.description && (
+                                                    <p
+                                                        style={{
+                                                            color: "#666",
+                                                            margin: "0 0 1rem 0",
+                                                            fontSize: "14px",
+                                                            fontStyle: "italic",
+                                                        }}
+                                                    >
+                                                        {campaign.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                onClick={() => joinCampaign(campaign.roomCode)}
+                                                disabled={joining || isFull}
                                                 style={{
-                                                    color: "#666",
-                                                    margin: "0 0 1rem 0",
+                                                    padding: "12px 24px",
+                                                    background:
+                                                        joining || isFull
+                                                            ? "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)"
+                                                            : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                                    color: "white",
+                                                    border: "none",
+                                                    borderRadius: "8px",
                                                     fontSize: "14px",
-                                                    fontStyle: "italic",
+                                                    fontWeight: "600",
+                                                    cursor:
+                                                        joining || isFull
+                                                            ? "not-allowed"
+                                                            : "pointer",
+                                                    transition: "all 0.2s ease",
+                                                    opacity: joining || isFull ? 0.6 : 1,
+                                                    minWidth: "100px",
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (!joining && !isFull) {
+                                                        e.currentTarget.style.transform =
+                                                            "translateY(-1px)";
+                                                        e.currentTarget.style.boxShadow =
+                                                            "0 5px 15px rgba(16, 185, 129, 0.3)";
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (!joining && !isFull) {
+                                                        e.currentTarget.style.transform =
+                                                            "translateY(0)";
+                                                        e.currentTarget.style.boxShadow = "none";
+                                                    }
                                                 }}
                                             >
-                                                {campaign.description}
-                                            </p>
-                                        )}
+                                                {joining
+                                                    ? "Joining..."
+                                                    : isFull
+                                                      ? "Full"
+                                                      : "🚀 Join"}
+                                            </button>
+                                        </div>
 
                                         <div
                                             style={{
@@ -408,7 +446,7 @@ export default function JoinCampaignPage() {
                     )}
                 </div>
 
-                {/* Join Form Section */}
+                {/* Private Campaign Join Form Section */}
                 <div
                     style={{
                         backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -426,11 +464,21 @@ export default function JoinCampaignPage() {
                             color: "#333",
                         }}
                     >
-                        🎯 Enter Room Code
+                        🔐 Private Campaign
                     </h3>
+                    <p
+                        style={{
+                            color: "#666",
+                            marginBottom: "1.5rem",
+                            fontSize: "16px",
+                            lineHeight: "1.5",
+                        }}
+                    >
+                        Enter the 6-character room code to join a private campaign.
+                    </p>
 
                     <form
-                        onSubmit={submit}
+                        onSubmit={submitPrivateCampaign}
                         style={{
                             display: "flex",
                             flexDirection: "column",
@@ -482,28 +530,33 @@ export default function JoinCampaignPage() {
                             />
                         </div>
 
-                        {/* Show current user info */}
-                        <div
-                            style={{
-                                background: "#f8fafc",
-                                borderRadius: "12px",
-                                padding: "1rem",
-                                border: "2px solid #e2e8f0",
-                                textAlign: "center",
-                            }}
-                        >
-                            <div
+                        <div>
+                            <label
                                 style={{
-                                    fontSize: "14px",
-                                    color: "#6b7280",
-                                    marginBottom: "0.25rem",
+                                    display: "block",
+                                    marginBottom: "0.5rem",
+                                    fontWeight: "600",
+                                    fontSize: "16px",
+                                    color: "#374151",
                                 }}
                             >
-                                Joining as:
-                            </div>
-                            <div style={{ fontSize: "18px", fontWeight: "600", color: "#374151" }}>
-                                👤 {userProfile?.displayName || "Loading..."}
-                            </div>
+                                Joining as
+                            </label>
+                            <input
+                                value={userProfile?.displayName || "Loading..."}
+                                readOnly
+                                style={{
+                                    width: "100%",
+                                    padding: "16px",
+                                    border: "2px solid #e5e7eb",
+                                    borderRadius: "12px",
+                                    fontSize: "16px",
+                                    backgroundColor: "#f9fafb",
+                                    color: "#374151",
+                                    cursor: "not-allowed",
+                                    fontWeight: "600",
+                                }}
+                            />
                         </div>
 
                         <button

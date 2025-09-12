@@ -152,374 +152,1128 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
     }
 
     if (!isAuthenticated) {
-        return <div style={{ padding: 24 }}>Checking authentication...</div>;
+        return (
+            <main
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>🔐</div>
+                    Checking authentication...
+                </div>
+            </main>
+        );
     }
 
     if (loading) {
-        return <div style={{ padding: 24 }}>Loading character...</div>;
+        return (
+            <main
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>⏳</div>
+                    Loading character...
+                </div>
+            </main>
+        );
     }
 
     if (error) {
         return (
-            <div style={{ padding: 24 }}>
+            <main
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "2rem",
+                }}
+            >
                 <div
                     style={{
-                        color: "#dc3545",
-                        backgroundColor: "#f8d7da",
-                        border: "1px solid #f5c6cb",
-                        borderRadius: 4,
-                        padding: 12,
-                        marginBottom: 16,
+                        background: "rgba(255, 255, 255, 0.95)",
+                        borderRadius: "16px",
+                        padding: "2rem",
+                        textAlign: "center",
+                        maxWidth: "500px",
+                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
                     }}
                 >
-                    {error}
+                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>❌</div>
+                    <div
+                        style={{
+                            color: "#dc2626",
+                            backgroundColor: "rgba(239, 68, 68, 0.1)",
+                            border: "2px solid rgba(239, 68, 68, 0.2)",
+                            borderRadius: "12px",
+                            padding: "1rem",
+                            marginBottom: "1.5rem",
+                            fontWeight: "600",
+                        }}
+                    >
+                        {error}
+                    </div>
+                    <button
+                        onClick={handleBackButton}
+                        style={{
+                            padding: "0.75rem 1.5rem",
+                            background: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "12px",
+                            cursor: "pointer",
+                            fontWeight: "600",
+                            transition: "all 0.2s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow = "0 5px 15px rgba(107, 114, 128, 0.3)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = "none";
+                        }}
+                    >
+                        {returnTo === "seat" ? "Back to Seat Management" : "Back to My Characters"}
+                    </button>
                 </div>
-                <button
-                    onClick={handleBackButton}
-                    style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#6c757d",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                    }}
-                >
-                    {returnTo === "seat" ? "Back to Seat Management" : "Back to My Characters"}
-                </button>
-            </div>
+            </main>
         );
     }
 
     if (!character) {
-        return <div style={{ padding: 24 }}>Character not found</div>;
+        return (
+            <main
+                style={{
+                    minHeight: "100vh",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "18px",
+                }}
+            >
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "1rem" }}>🤷‍♂️</div>
+                    Character not found
+                </div>
+            </main>
+        );
     }
 
     return (
-        <main style={{ padding: 24, maxWidth: 1000, margin: "0 auto" }}>
-            {/* Header */}
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 32,
-                }}
-            >
-                <div>
-                    <h1 style={{ margin: 0 }}>{character.name}</h1>
-                    <p style={{ margin: "4px 0", color: "#666" }}>
-                        Level {character.level} {character.race.name}{" "}
-                        {character.characterClass.name}
-                    </p>
-                    {!canEdit && character.playerId !== currentUser?.id && (
-                        <p style={{ margin: "4px 0", color: "#e74c3c", fontSize: "14px" }}>
-                            👁️ View Only - You can view but not edit this character
-                        </p>
-                    )}
-                    {canEdit && character.playerId !== currentUser?.id && (
-                        <p style={{ margin: "4px 0", color: "#28a745", fontSize: "14px" }}>
-                            🛡️ GM Access - You can edit this character as the Game Master
-                        </p>
-                    )}
-                </div>
-                <div style={{ display: "flex", gap: 12 }}>
-                    <button
-                        onClick={handleBackButton}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#6c757d",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                        }}
-                    >
-                        {returnTo === "seat" ? "Back to Seat Management" : "Back"}
-                    </button>
-                    {editMode ? (
-                        <>
-                            <button
-                                onClick={saveUpdates}
-                                style={{
-                                    padding: "8px 16px",
-                                    backgroundColor: "#28a745",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: 4,
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Save Changes
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setEditMode(false);
-                                    setUpdates({});
-                                }}
-                                style={{
-                                    padding: "8px 16px",
-                                    backgroundColor: "#dc3545",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: 4,
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        </>
-                    ) : (
-                        canEdit && (
-                            <button
-                                onClick={() => setEditMode(true)}
-                                style={{
-                                    padding: "8px 16px",
-                                    backgroundColor: "#007bff",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: 4,
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Edit Character
-                            </button>
-                        )
-                    )}
-                </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-                {/* Left Column */}
-                <div>
-                    {/* Ability Scores */}
-                    <div style={{ marginBottom: 32 }}>
-                        <h3>Ability Scores</h3>
-                        <div
+        <main
+            style={{
+                minHeight: "100vh",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                padding: "2rem",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            }}
+        >
+            <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+                {/* Header */}
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "2rem",
+                        background: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        borderRadius: "16px",
+                        padding: "2rem",
+                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
+                    }}
+                >
+                    <div>
+                        <h1
                             style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(2, 1fr)",
-                                gap: 16,
+                                fontSize: "2.5rem",
+                                fontWeight: "700",
+                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                margin: "0 0 0.5rem 0",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.75rem",
                             }}
                         >
-                            {(Object.keys(character.stats) as Array<keyof CharacterStats>).map(
-                                (stat) => (
-                                    <div
-                                        key={stat}
-                                        style={{
-                                            textAlign: "center",
-                                            border: "1px solid #ddd",
-                                            borderRadius: 4,
-                                            padding: 12,
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontWeight: "bold",
-                                                fontSize: 12,
-                                                textTransform: "uppercase",
-                                            }}
-                                        >
-                                            {stat.slice(0, 3)}
-                                        </div>
-                                        <div style={{ fontSize: 24, fontWeight: "bold" }}>
-                                            {character.stats[stat]}
-                                        </div>
-                                        <div style={{ fontSize: 14, color: "#666" }}>
-                                            {getModifier(character.stats[stat])}
-                                        </div>
-                                    </div>
-                                ),
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Combat Stats */}
-                    <div style={{ marginBottom: 32 }}>
-                        <h3>Combat Stats</h3>
+                            🎭 {character.name}
+                        </h1>
                         <div
                             style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(2, 1fr)",
-                                gap: 16,
+                                fontSize: "1.2rem",
+                                color: "#6b7280",
+                                marginBottom: "0.5rem",
+                                fontWeight: "500",
                             }}
                         >
-                            <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 12 }}>
-                                <div style={{ fontWeight: "bold", marginBottom: 8 }}>
-                                    Hit Points
-                                </div>
-                                {editMode ? (
-                                    <div
-                                        style={{ display: "flex", flexDirection: "column", gap: 4 }}
-                                    >
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 8,
-                                            }}
-                                        >
-                                            <label style={{ fontSize: 12 }}>Current:</label>
-                                            <input
-                                                type="number"
-                                                value={
-                                                    updates.hitPoints?.current ??
-                                                    character.hitPoints.current
-                                                }
-                                                onChange={(e) =>
-                                                    updateHitPoints(
-                                                        parseInt(e.target.value),
-                                                        updates.hitPoints?.maximum ??
-                                                            character.hitPoints.maximum,
-                                                        updates.hitPoints?.temporary ??
-                                                            character.hitPoints.temporary,
-                                                    )
-                                                }
-                                                style={{ width: 60, padding: 4 }}
-                                            />
-                                        </div>
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 8,
-                                            }}
-                                        >
-                                            <label style={{ fontSize: 12 }}>Max:</label>
-                                            <input
-                                                type="number"
-                                                value={
-                                                    updates.hitPoints?.maximum ??
-                                                    character.hitPoints.maximum
-                                                }
-                                                onChange={(e) =>
-                                                    updateHitPoints(
-                                                        updates.hitPoints?.current ??
-                                                            character.hitPoints.current,
-                                                        parseInt(e.target.value),
-                                                        updates.hitPoints?.temporary ??
-                                                            character.hitPoints.temporary,
-                                                    )
-                                                }
-                                                style={{ width: 60, padding: 4 }}
-                                            />
-                                        </div>
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 8,
-                                            }}
-                                        >
-                                            <label style={{ fontSize: 12 }}>Temp:</label>
-                                            <input
-                                                type="number"
-                                                value={
-                                                    updates.hitPoints?.temporary ??
-                                                    character.hitPoints.temporary
-                                                }
-                                                onChange={(e) =>
-                                                    updateHitPoints(
-                                                        updates.hitPoints?.current ??
-                                                            character.hitPoints.current,
-                                                        updates.hitPoints?.maximum ??
-                                                            character.hitPoints.maximum,
-                                                        parseInt(e.target.value),
-                                                    )
-                                                }
-                                                style={{ width: 60, padding: 4 }}
-                                            />
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div style={{ fontSize: 18 }}>
-                                        {character.hitPoints.current}/{character.hitPoints.maximum}
-                                        {character.hitPoints.temporary > 0 &&
-                                            ` (+${character.hitPoints.temporary})`}
-                                    </div>
-                                )}
-                            </div>
-                            <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 12 }}>
-                                <div style={{ fontWeight: "bold", marginBottom: 8 }}>
-                                    Armor Class
-                                </div>
-                                <div style={{ fontSize: 18 }}>{character.armorClass}</div>
-                            </div>
-                            <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 12 }}>
-                                <div style={{ fontWeight: "bold", marginBottom: 8 }}>
-                                    Initiative
-                                </div>
-                                <div style={{ fontSize: 18 }}>
-                                    {character.initiative >= 0 ? "+" : ""}
-                                    {character.initiative}
-                                </div>
-                            </div>
-                            <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 12 }}>
-                                <div style={{ fontWeight: "bold", marginBottom: 8 }}>Speed</div>
-                                <div style={{ fontSize: 18 }}>{character.speed} ft</div>
-                            </div>
+                            Level {character.level} {character.race.name}{" "}
+                            {character.characterClass.name}
                         </div>
+                        {!canEdit && character.playerId !== currentUser?.id && (
+                            <div
+                                style={{
+                                    color: "#f59e0b",
+                                    fontSize: "0.9rem",
+                                    fontWeight: "600",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                👁️ View Only - You can view but not edit this character
+                            </div>
+                        )}
+                        {canEdit && character.playerId !== currentUser?.id && (
+                            <div
+                                style={{
+                                    color: "#10b981",
+                                    fontSize: "0.9rem",
+                                    fontWeight: "600",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                🛡️ GM Access - You can edit this character as the Game Master
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: "flex", gap: "0.75rem" }}>
+                        <button
+                            onClick={handleBackButton}
+                            style={{
+                                padding: "0.75rem 1.5rem",
+                                background: "rgba(255, 255, 255, 0.2)",
+                                color: "#374151",
+                                border: "2px solid #e5e7eb",
+                                borderRadius: "12px",
+                                cursor: "pointer",
+                                fontWeight: "600",
+                                transition: "all 0.2s ease",
+                                fontSize: "0.95rem",
+                                backdropFilter: "blur(10px)",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
+                                e.currentTarget.style.transform = "translateY(-2px)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                                e.currentTarget.style.transform = "translateY(0)";
+                            }}
+                        >
+                            {returnTo === "seat" ? "← Back to Seats" : "← Back"}
+                        </button>
+                        {editMode ? (
+                            <>
+                                <button
+                                    onClick={saveUpdates}
+                                    style={{
+                                        padding: "0.75rem 1.5rem",
+                                        background:
+                                            "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "12px",
+                                        cursor: "pointer",
+                                        fontWeight: "600",
+                                        transition: "all 0.2s ease",
+                                        fontSize: "0.95rem",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = "translateY(-2px)";
+                                        e.currentTarget.style.boxShadow =
+                                            "0 5px 15px rgba(16, 185, 129, 0.3)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = "translateY(0)";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}
+                                >
+                                    ✅ Save Changes
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setEditMode(false);
+                                        setUpdates({});
+                                    }}
+                                    style={{
+                                        padding: "0.75rem 1.5rem",
+                                        background:
+                                            "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "12px",
+                                        cursor: "pointer",
+                                        fontWeight: "600",
+                                        transition: "all 0.2s ease",
+                                        fontSize: "0.95rem",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = "translateY(-2px)";
+                                        e.currentTarget.style.boxShadow =
+                                            "0 5px 15px rgba(239, 68, 68, 0.3)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = "translateY(0)";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}
+                                >
+                                    ❌ Cancel
+                                </button>
+                            </>
+                        ) : (
+                            canEdit && (
+                                <button
+                                    onClick={() => setEditMode(true)}
+                                    style={{
+                                        padding: "0.75rem 1.5rem",
+                                        background:
+                                            "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "12px",
+                                        cursor: "pointer",
+                                        fontWeight: "600",
+                                        transition: "all 0.2s ease",
+                                        fontSize: "0.95rem",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = "translateY(-2px)";
+                                        e.currentTarget.style.boxShadow =
+                                            "0 5px 15px rgba(59, 130, 246, 0.3)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = "translateY(0)";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}
+                                >
+                                    ✏️ Edit Character
+                                </button>
+                            )
+                        )}
                     </div>
                 </div>
 
-                {/* Right Column */}
-                <div>
-                    {/* Character Info */}
-                    <div style={{ marginBottom: 32 }}>
-                        <h3>Character Information</h3>
-                        <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 16 }}>
-                            <div style={{ marginBottom: 12 }}>
-                                <strong>Race:</strong> {character.race.name}
-                                {character.race.subrace && ` (${character.race.subrace})`}
-                            </div>
-                            <div style={{ marginBottom: 12 }}>
-                                <strong>Class:</strong> {character.characterClass.name}
-                                {character.characterClass.subclass &&
-                                    ` (${character.characterClass.subclass})`}
-                            </div>
-                            <div style={{ marginBottom: 12 }}>
-                                <strong>Background:</strong> {character.background.name}
-                            </div>
-                            <div style={{ marginBottom: 12 }}>
-                                <strong>Level:</strong> {character.level}
-                            </div>
-                            <div>
-                                <strong>Experience Points:</strong> {character.experiencePoints}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Skills */}
-                    <div style={{ marginBottom: 32 }}>
-                        <h3>Skills</h3>
-                        <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "2rem" }}>
+                    {/* Left Column - Ability Scores */}
+                    <div>
+                        <div
+                            style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                borderRadius: "16px",
+                                padding: "2rem",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(10px)",
+                                marginBottom: "2rem",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    margin: "0 0 1.5rem 0",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                💪 Ability Scores
+                            </h3>
                             <div
                                 style={{
                                     display: "grid",
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gap: 8,
-                                    fontSize: 14,
+                                    gap: "1rem",
+                                }}
+                            >
+                                {(Object.keys(character.stats) as Array<keyof CharacterStats>).map(
+                                    (stat) => (
+                                        <div
+                                            key={stat}
+                                            style={{
+                                                textAlign: "center",
+                                                border: "2px solid #e5e7eb",
+                                                borderRadius: "12px",
+                                                padding: "1rem",
+                                                backgroundColor: "#f9fafb",
+                                                transition: "all 0.2s ease",
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontWeight: "700",
+                                                    fontSize: "0.8rem",
+                                                    textTransform: "uppercase",
+                                                    color: "#6b7280",
+                                                    marginBottom: "0.5rem",
+                                                    letterSpacing: "0.05em",
+                                                }}
+                                            >
+                                                {stat.slice(0, 3)}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "2rem",
+                                                    fontWeight: "800",
+                                                    color: "#374151",
+                                                    marginBottom: "0.25rem",
+                                                }}
+                                            >
+                                                {character.stats[stat]}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "1rem",
+                                                    color: "#667eea",
+                                                    fontWeight: "600",
+                                                }}
+                                            >
+                                                {getModifier(character.stats[stat])}
+                                            </div>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Combat Stats */}
+                        <div
+                            style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                borderRadius: "16px",
+                                padding: "2rem",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(10px)",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    margin: "0 0 1.5rem 0",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                ⚔️ Combat Stats
+                            </h3>
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gap: "1rem",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        padding: "1rem",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontWeight: "700",
+                                            marginBottom: "0.75rem",
+                                            color: "#374151",
+                                            fontSize: "1rem",
+                                        }}
+                                    >
+                                        ❤️ Hit Points
+                                    </div>
+                                    {editMode ? (
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "0.5rem",
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "0.5rem",
+                                                }}
+                                            >
+                                                <label
+                                                    style={{
+                                                        fontSize: "0.8rem",
+                                                        fontWeight: "600",
+                                                        color: "#6b7280",
+                                                        minWidth: "50px",
+                                                    }}
+                                                >
+                                                    Current:
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={
+                                                        updates.hitPoints?.current ??
+                                                        character.hitPoints.current
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateHitPoints(
+                                                            parseInt(e.target.value),
+                                                            updates.hitPoints?.maximum ??
+                                                                character.hitPoints.maximum,
+                                                            updates.hitPoints?.temporary ??
+                                                                character.hitPoints.temporary,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        width: "80px",
+                                                        padding: "0.5rem",
+                                                        border: "2px solid #e5e7eb",
+                                                        borderRadius: "6px",
+                                                        fontSize: "0.9rem",
+                                                        textAlign: "center",
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "0.5rem",
+                                                }}
+                                            >
+                                                <label
+                                                    style={{
+                                                        fontSize: "0.8rem",
+                                                        fontWeight: "600",
+                                                        color: "#6b7280",
+                                                        minWidth: "50px",
+                                                    }}
+                                                >
+                                                    Max:
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={
+                                                        updates.hitPoints?.maximum ??
+                                                        character.hitPoints.maximum
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateHitPoints(
+                                                            updates.hitPoints?.current ??
+                                                                character.hitPoints.current,
+                                                            parseInt(e.target.value),
+                                                            updates.hitPoints?.temporary ??
+                                                                character.hitPoints.temporary,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        width: "80px",
+                                                        padding: "0.5rem",
+                                                        border: "2px solid #e5e7eb",
+                                                        borderRadius: "6px",
+                                                        fontSize: "0.9rem",
+                                                        textAlign: "center",
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "0.5rem",
+                                                }}
+                                            >
+                                                <label
+                                                    style={{
+                                                        fontSize: "0.8rem",
+                                                        fontWeight: "600",
+                                                        color: "#6b7280",
+                                                        minWidth: "50px",
+                                                    }}
+                                                >
+                                                    Temp:
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={
+                                                        updates.hitPoints?.temporary ??
+                                                        character.hitPoints.temporary
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateHitPoints(
+                                                            updates.hitPoints?.current ??
+                                                                character.hitPoints.current,
+                                                            updates.hitPoints?.maximum ??
+                                                                character.hitPoints.maximum,
+                                                            parseInt(e.target.value),
+                                                        )
+                                                    }
+                                                    style={{
+                                                        width: "80px",
+                                                        padding: "0.5rem",
+                                                        border: "2px solid #e5e7eb",
+                                                        borderRadius: "6px",
+                                                        fontSize: "0.9rem",
+                                                        textAlign: "center",
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            style={{
+                                                fontSize: "1.5rem",
+                                                fontWeight: "700",
+                                                color: "#374151",
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            {character.hitPoints.current}/
+                                            {character.hitPoints.maximum}
+                                            {character.hitPoints.temporary > 0 &&
+                                                ` (+${character.hitPoints.temporary})`}
+                                        </div>
+                                    )}
+                                </div>
+                                <div
+                                    style={{
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        padding: "1rem",
+                                        backgroundColor: "#f9fafb",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontWeight: "700",
+                                            marginBottom: "0.75rem",
+                                            color: "#374151",
+                                            fontSize: "1rem",
+                                        }}
+                                    >
+                                        🛡️ Armor Class
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.5rem",
+                                            fontWeight: "700",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {character.armorClass}
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        padding: "1rem",
+                                        backgroundColor: "#f9fafb",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontWeight: "700",
+                                            marginBottom: "0.75rem",
+                                            color: "#374151",
+                                            fontSize: "1rem",
+                                        }}
+                                    >
+                                        ⚡ Initiative
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.5rem",
+                                            fontWeight: "700",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {character.initiative >= 0 ? "+" : ""}
+                                        {character.initiative}
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        padding: "1rem",
+                                        backgroundColor: "#f9fafb",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontWeight: "700",
+                                            marginBottom: "0.75rem",
+                                            color: "#374151",
+                                            fontSize: "1rem",
+                                        }}
+                                    >
+                                        🏃 Speed
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.5rem",
+                                            fontWeight: "700",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {character.speed} ft
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Middle Column - Character Info */}
+                    <div>
+                        <div
+                            style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                borderRadius: "16px",
+                                padding: "2rem",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(10px)",
+                                marginBottom: "2rem",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    margin: "0 0 1.5rem 0",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                📋 Character Info
+                            </h3>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                <div
+                                    style={{
+                                        padding: "1rem",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "0.8rem",
+                                            fontWeight: "600",
+                                            color: "#6b7280",
+                                            marginBottom: "0.25rem",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.05em",
+                                        }}
+                                    >
+                                        Race
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.1rem",
+                                            fontWeight: "600",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        🧝 {character.race.name}
+                                        {character.race.subrace && ` (${character.race.subrace})`}
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        padding: "1rem",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "0.8rem",
+                                            fontWeight: "600",
+                                            color: "#6b7280",
+                                            marginBottom: "0.25rem",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.05em",
+                                        }}
+                                    >
+                                        Class
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.1rem",
+                                            fontWeight: "600",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        ⚔️ {character.characterClass.name}
+                                        {character.characterClass.subclass &&
+                                            ` (${character.characterClass.subclass})`}
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        padding: "1rem",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "0.8rem",
+                                            fontWeight: "600",
+                                            color: "#6b7280",
+                                            marginBottom: "0.25rem",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.05em",
+                                        }}
+                                    >
+                                        Background
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "1.1rem",
+                                            fontWeight: "600",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        📖 {character.background.name}
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr",
+                                        gap: "1rem",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            padding: "1rem",
+                                            border: "2px solid #e5e7eb",
+                                            borderRadius: "12px",
+                                            backgroundColor: "#f9fafb",
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: "0.8rem",
+                                                fontWeight: "600",
+                                                color: "#6b7280",
+                                                marginBottom: "0.25rem",
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.05em",
+                                            }}
+                                        >
+                                            Level
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: "1.5rem",
+                                                fontWeight: "700",
+                                                color: "#667eea",
+                                            }}
+                                        >
+                                            {character.level}
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: "1rem",
+                                            border: "2px solid #e5e7eb",
+                                            borderRadius: "12px",
+                                            backgroundColor: "#f9fafb",
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: "0.8rem",
+                                                fontWeight: "600",
+                                                color: "#6b7280",
+                                                marginBottom: "0.25rem",
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.05em",
+                                            }}
+                                        >
+                                            XP
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: "1.2rem",
+                                                fontWeight: "700",
+                                                color: "#667eea",
+                                            }}
+                                        >
+                                            {character.experiencePoints}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Equipment & Currency */}
+                        <div
+                            style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                borderRadius: "16px",
+                                padding: "2rem",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(10px)",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    margin: "0 0 1.5rem 0",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                💰 Equipment & Currency
+                            </h3>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                <div
+                                    style={{
+                                        padding: "1rem",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "0.9rem",
+                                            fontWeight: "600",
+                                            color: "#6b7280",
+                                            marginBottom: "0.75rem",
+                                        }}
+                                    >
+                                        💰 Currency
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "repeat(4, 1fr)",
+                                            gap: "0.5rem",
+                                            fontSize: "0.9rem",
+                                        }}
+                                    >
+                                        <div style={{ textAlign: "center" }}>
+                                            <div
+                                                style={{
+                                                    fontWeight: "700",
+                                                    color: "#8b5cf6",
+                                                    fontSize: "1.1rem",
+                                                }}
+                                            >
+                                                {character.currency.platinum}
+                                            </div>
+                                            <div style={{ color: "#6b7280", fontSize: "0.7rem" }}>
+                                                PP
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: "center" }}>
+                                            <div
+                                                style={{
+                                                    fontWeight: "700",
+                                                    color: "#f59e0b",
+                                                    fontSize: "1.1rem",
+                                                }}
+                                            >
+                                                {character.currency.gold}
+                                            </div>
+                                            <div style={{ color: "#6b7280", fontSize: "0.7rem" }}>
+                                                GP
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: "center" }}>
+                                            <div
+                                                style={{
+                                                    fontWeight: "700",
+                                                    color: "#6b7280",
+                                                    fontSize: "1.1rem",
+                                                }}
+                                            >
+                                                {character.currency.silver}
+                                            </div>
+                                            <div style={{ color: "#6b7280", fontSize: "0.7rem" }}>
+                                                SP
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: "center" }}>
+                                            <div
+                                                style={{
+                                                    fontWeight: "700",
+                                                    color: "#92400e",
+                                                    fontSize: "1.1rem",
+                                                }}
+                                            >
+                                                {character.currency.copper}
+                                            </div>
+                                            <div style={{ color: "#6b7280", fontSize: "0.7rem" }}>
+                                                CP
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        padding: "1rem",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "12px",
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "0.9rem",
+                                            fontWeight: "600",
+                                            color: "#6b7280",
+                                            marginBottom: "0.75rem",
+                                        }}
+                                    >
+                                        🎒 Equipment
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "0.9rem",
+                                            color: "#374151",
+                                            lineHeight: "1.5",
+                                        }}
+                                    >
+                                        {[
+                                            ...character.equipment.weapons,
+                                            ...character.equipment.armor,
+                                            ...character.equipment.tools,
+                                            ...character.equipment.other,
+                                        ].length > 0
+                                            ? [
+                                                  ...character.equipment.weapons,
+                                                  ...character.equipment.armor,
+                                                  ...character.equipment.tools,
+                                                  ...character.equipment.other,
+                                              ].join(", ")
+                                            : "No equipment listed"}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Skills */}
+                    <div>
+                        <div
+                            style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                borderRadius: "16px",
+                                padding: "2rem",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(10px)",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    margin: "0 0 1.5rem 0",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                }}
+                            >
+                                🎯 Skills
+                            </h3>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "0.5rem",
                                 }}
                             >
                                 {Object.entries(character.skills).map(([skill, bonus]) => (
                                     <div
                                         key={skill}
-                                        style={{ display: "flex", justifyContent: "space-between" }}
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            padding: "0.75rem 1rem",
+                                            border: character.skillProficiencies.includes(
+                                                skill as any,
+                                            )
+                                                ? "2px solid #667eea"
+                                                : "2px solid #e5e7eb",
+                                            borderRadius: "8px",
+                                            backgroundColor: character.skillProficiencies.includes(
+                                                skill as any,
+                                            )
+                                                ? "rgba(102, 126, 234, 0.1)"
+                                                : "#f9fafb",
+                                            fontSize: "0.9rem",
+                                        }}
                                     >
                                         <span
                                             style={{
                                                 fontWeight: character.skillProficiencies.includes(
                                                     skill as any,
                                                 )
-                                                    ? "bold"
-                                                    : "normal",
+                                                    ? "700"
+                                                    : "500",
+                                                color: character.skillProficiencies.includes(
+                                                    skill as any,
+                                                )
+                                                    ? "#374151"
+                                                    : "#6b7280",
                                             }}
                                         >
+                                            {character.skillProficiencies.includes(skill as any) &&
+                                                "⭐ "}
                                             {skill
                                                 .replace(/([A-Z])/g, " $1")
                                                 .replace(/^./, (str) => str.toUpperCase())}
                                         </span>
-                                        <span>
+                                        <span
+                                            style={{
+                                                fontWeight: "700",
+                                                color: "#667eea",
+                                                minWidth: "2rem",
+                                                textAlign: "right",
+                                            }}
+                                        >
                                             {bonus >= 0 ? "+" : ""}
                                             {bonus}
                                         </span>
@@ -528,55 +1282,73 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Equipment */}
-                    <div style={{ marginBottom: 32 }}>
-                        <h3>Equipment & Currency</h3>
-                        <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 16 }}>
-                            <div style={{ marginBottom: 16 }}>
-                                <strong>Currency:</strong>
-                                <div style={{ fontSize: 14, marginTop: 4 }}>
-                                    {character.currency.platinum}pp, {character.currency.gold}gp,
-                                    {character.currency.silver}sp, {character.currency.copper}cp
-                                </div>
-                            </div>
-                            <div>
-                                <strong>Equipment:</strong>
-                                <div style={{ fontSize: 14, marginTop: 4 }}>
-                                    {[
-                                        ...character.equipment.weapons,
-                                        ...character.equipment.armor,
-                                        ...character.equipment.tools,
-                                        ...character.equipment.other,
-                                    ].length > 0
-                                        ? [
-                                              ...character.equipment.weapons,
-                                              ...character.equipment.armor,
-                                              ...character.equipment.tools,
-                                              ...character.equipment.other,
-                                          ].join(", ")
-                                        : "No equipment listed"}
-                                </div>
-                            </div>
+                {/* Backstory */}
+                {character.backstory && (
+                    <div
+                        style={{
+                            background: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "16px",
+                            padding: "2rem",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                            backdropFilter: "blur(10px)",
+                            marginTop: "2rem",
+                        }}
+                    >
+                        <h3
+                            style={{
+                                margin: "0 0 1.5rem 0",
+                                fontSize: "1.5rem",
+                                fontWeight: "600",
+                                color: "#374151",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                            }}
+                        >
+                            📖 Backstory
+                        </h3>
+                        <div
+                            style={{
+                                padding: "1.5rem",
+                                border: "2px solid #e5e7eb",
+                                borderRadius: "12px",
+                                backgroundColor: "#f9fafb",
+                                lineHeight: "1.8",
+                                fontSize: "1rem",
+                                color: "#374151",
+                            }}
+                        >
+                            {character.backstory}
                         </div>
                     </div>
-                </div>
-            </div>
+                )}
 
-            {/* Backstory */}
-            {character.backstory && (
-                <div style={{ marginTop: 32 }}>
-                    <h3>Backstory</h3>
-                    <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 16 }}>
-                        <p style={{ margin: 0, lineHeight: 1.6 }}>{character.backstory}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Dice Rolling */}
-            <div style={{ marginTop: 32 }}>
-                <h3>🎲 Quick Rolls</h3>
-                <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 16 }}>
+                {/* Quick Dice Rolling */}
+                <div
+                    style={{
+                        background: "rgba(255, 255, 255, 0.95)",
+                        borderRadius: "16px",
+                        padding: "2rem",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                        backdropFilter: "blur(10px)",
+                        marginTop: "2rem",
+                    }}
+                >
+                    <h3
+                        style={{
+                            margin: "0 0 1.5rem 0",
+                            fontSize: "1.5rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                        }}
+                    >
+                        🎲 Quick Rolls
+                    </h3>
                     <DiceRollingComponent character={character} />
                 </div>
             </div>
