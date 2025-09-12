@@ -1,3 +1,121 @@
+// --- Turn Tracking Functions ---
+/**
+ * Set the turn order for a campaign (GM only).
+ */
+export async function setTurnOrder(
+    campaignId: string,
+    turnOrder: string[],
+    user: PublicUserProfile,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+    if (!campaign) return false;
+    // Only GM can set turn order
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) return false;
+    const result = await campaignsCol(db).updateOne(
+        { id: campaignId },
+        {
+            $set: {
+                turnOrder,
+                currentTurnIndex: 0,
+                roundNumber: 1,
+                updatedAt: new Date().toISOString(),
+            },
+        },
+    );
+    return result.modifiedCount > 0;
+}
+
+/**
+ * Advance to the next turn. Increments currentTurnIndex and roundNumber as needed. (GM only)
+ */
+export async function advanceTurn(campaignId: string, user: PublicUserProfile): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+    if (!campaign) {
+        console.log("Campaign not found");
+        return false;
+    }
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) {
+        console.log("User is not GM");
+        return false;
+    }
+    let { currentTurnIndex = 0, turnOrder = [], roundNumber = 1 } = campaign;
+    if (!Array.isArray(turnOrder) || turnOrder.length === 0) return false;
+    currentTurnIndex++;
+    if (currentTurnIndex >= turnOrder.length) {
+        currentTurnIndex = 0;
+        roundNumber++;
+    }
+    const result = await campaignsCol(db).updateOne(
+        { id: campaignId },
+        { $set: { currentTurnIndex, roundNumber, updatedAt: new Date().toISOString() } },
+    );
+    return result.modifiedCount > 0;
+}
+
+/**
+ * Skip the current turn (move to next, same as advanceTurn). (GM only)
+ */
+export async function skipTurn(campaignId: string, user: PublicUserProfile): Promise<boolean> {
+    // Alias for advanceTurn
+    return advanceTurn(campaignId, user);
+}
+
+/**
+ * Reorder the turn order array. (GM only)
+ */
+export async function reorderTurnOrder(
+    campaignId: string,
+    newOrder: string[],
+    user: PublicUserProfile,
+): Promise<boolean> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+    if (!campaign) return false;
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) return false;
+    // Reset currentTurnIndex to 0 and roundNumber to 1 when reordering
+    const result = await campaignsCol(db).updateOne(
+        { id: campaignId },
+        {
+            $set: {
+                turnOrder: newOrder,
+                currentTurnIndex: 0,
+                roundNumber: 1,
+                updatedAt: new Date().toISOString(),
+            },
+        },
+    );
+    return result.modifiedCount > 0;
+}
+
+/**
+ * Get the turn order, current turn index, and round number for a campaign.
+ */
+export async function getTurnOrder(
+    campaignId: string,
+    user: PublicUserProfile,
+): Promise<{ turnOrder: string[]; currentTurnIndex: number; roundNumber: number } | null> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+    if (!campaign) return null;
+
+    const gmSeat = campaign.seats.find((s) => s.role === "gm");
+    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+    if (!isGM) return null;
+
+    return {
+        turnOrder: campaign.turnOrder || [],
+        currentTurnIndex: campaign.currentTurnIndex || 0,
+        roundNumber: campaign.roundNumber || 1,
+    };
+}
 import { nanoid } from "nanoid";
 import { snapshotRegistry } from "./aiModels.js";
 import {
@@ -107,6 +225,10 @@ export async function createCampaign(
         characterEditMode: req.characterEditMode || "strict",
         isPrivate: req.isPrivate ?? true, // campaigns are private by default
         status: CampaignStatus.PLANNING, // new campaigns start in planning phase
+        // --- Turn Tracking ---
+        turnOrder: [], // initialize as empty, to be set by GM after campaign setup
+        currentTurnIndex: 0,
+        roundNumber: 1,
     };
 
     await campaignsCol(db).insertOne(campaign);
@@ -192,7 +314,7 @@ export async function joinCampaign(
 
     // Assign to the available seat
     await campaignsCol(db).updateOne(
-        { id: campaign.id, "seats.seatId": availableSeat.seatId },
+        { "id": campaign.id, "seats.seatId": availableSeat.seatId },
         { $set: { "seats.$.humanPlayerId": user.id } },
     );
 

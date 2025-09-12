@@ -85,7 +85,7 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
+                        "Authorization": `Bearer ${token}`,
                     },
                     body: JSON.stringify({ playerId }),
                 },
@@ -150,13 +150,22 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                             )}
                         </div>
                     </div>
-                    <Button
-                        onClick={() => router.back()}
-                        variant="secondary"
-                        className="hover:transform hover:-translate-y-1"
-                    >
-                        ← Back
-                    </Button>
+                    <div className="flex flex-col gap-4 items-end">
+                        <Button
+                            onClick={() => router.back()}
+                            variant="secondary"
+                            className="hover:transform hover:-translate-y-1"
+                        >
+                            ← Back
+                        </Button>
+                        <Button
+                            onClick={() => router.push(`/gameplay/${params.campaignId}`)}
+                            variant="primary"
+                            className="hover:transform hover:-translate-y-1"
+                        >
+                            🎮 Go to Gameplay
+                        </Button>
+                    </div>
                 </div>
 
                 {/* GM Section - Visible to All */}
@@ -211,7 +220,7 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                                                             headers: {
                                                                                 "Content-Type":
                                                                                     "application/json",
-                                                                                Authorization: `Bearer ${token}`,
+                                                                                "Authorization": `Bearer ${token}`,
                                                                             },
                                                                             body: JSON.stringify({
                                                                                 newGmId:
@@ -569,7 +578,7 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                         <div className="text-sm text-gray-500 mb-4 leading-relaxed">
                                             <div className="mb-1">
                                                 <strong>Player:</strong>{" "}
-                                                {seat.humanPlayerId ? (
+                                                {seat.humanPlayerId && !seat.ai?.enabled ? (
                                                     <>
                                                         👤 {seat.humanPlayerId}
                                                         {seat.humanPlayerId ===

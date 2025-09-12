@@ -80,6 +80,21 @@ export interface CampaignConfig {
     characterEditMode: CampaignEditMode; // controls who can edit character stats
     isPrivate: boolean; // private campaigns only joinable via room code
     status: CampaignStatus; // campaign lifecycle state
+
+    // --- Turn Tracking ---
+    /**
+     * Array of character or player IDs representing the turn order for this campaign/session.
+     * Can be characterId or playerId depending on implementation.
+     */
+    turnOrder: string[];
+    /**
+     * Index of the current turn in the turnOrder array.
+     */
+    currentTurnIndex: number;
+    /**
+     * Current round number (increments each time turnOrder cycles).
+     */
+    roundNumber: number;
 }
 
 export interface CreateCampaignRequest {

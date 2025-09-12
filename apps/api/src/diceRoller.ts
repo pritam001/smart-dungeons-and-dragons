@@ -354,7 +354,7 @@ export function isValidDiceNotation(notation: string): boolean {
 export function getDiceSuggestions(): Record<string, string[]> {
     return {
         "Common Rolls": ["1d20", "1d4", "1d6", "1d8", "1d10", "1d12"],
-        Damage: ["1d4", "1d6", "1d8", "1d10", "1d12", "2d6", "3d6"],
+        "Damage": ["1d4", "1d6", "1d8", "1d10", "1d12", "2d6", "3d6"],
         "Hit Dice": ["1d6", "1d8", "1d10", "1d12"],
         "Stat Rolling": ["4d6", "3d6", "2d6+6"],
         "Multiple Dice": ["2d4", "2d6", "2d8", "3d4", "3d6", "4d6"],

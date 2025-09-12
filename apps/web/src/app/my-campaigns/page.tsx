@@ -98,7 +98,7 @@ export default function MyCampaignsPage() {
             const response = await fetch(`http://localhost:13333/campaigns/${campaignId}`, {
                 method: "PUT",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ status }),

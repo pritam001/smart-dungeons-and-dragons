@@ -120,7 +120,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string }
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(updates),
             });
@@ -606,7 +606,7 @@ function DiceRollingComponent({ character }: { character: CharacterSheet }) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     characterId: character.id,

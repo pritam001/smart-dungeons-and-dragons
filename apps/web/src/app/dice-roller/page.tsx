@@ -139,7 +139,7 @@ export default function DiceRollerPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
                 body: JSON.stringify({
                     characterId: selectedCharacter.id,
