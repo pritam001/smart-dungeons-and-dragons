@@ -16,7 +16,7 @@ export default function Home() {
     }, [router]);
 
     return (
-        <main style={{ padding: 24, textAlign: "center" }}>
+        <main className="p-6 text-center">
             <h1>DnD AI</h1>
             <p>Loading...</p>
         </main>

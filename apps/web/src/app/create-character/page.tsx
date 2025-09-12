@@ -352,19 +352,12 @@ export default function CreateCharacterPage() {
         switch (currentStep) {
             case 1:
                 return (
-                    <div style={{ textAlign: "center", padding: "2rem" }}>
-                        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>🧙‍♂️</div>
-                        <h2
-                            style={{
-                                fontSize: "28px",
-                                fontWeight: "700",
-                                marginBottom: "1rem",
-                                color: "#374151",
-                            }}
-                        >
+                    <div className="text-center p-8">
+                        <div className="text-6xl mb-4">🧙‍♂️</div>
+                        <h2 className="text-3xl font-bold mb-4 text-gray-800">
                             What's your character's name?
                         </h2>
-                        <p style={{ color: "#6b7280", marginBottom: "2rem", fontSize: "16px" }}>
+                        <p className="text-gray-600 mb-8 text-lg">
                             Choose a name that reflects your character's personality and background.
                         </p>
                         <input
@@ -372,110 +365,39 @@ export default function CreateCharacterPage() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Enter character name"
-                            style={{
-                                width: "100%",
-                                maxWidth: "400px",
-                                padding: "20px",
-                                border: "3px solid #e5e7eb",
-                                borderRadius: "16px",
-                                fontSize: "20px",
-                                textAlign: "center",
-                                transition: "all 0.3s ease",
-                                outline: "none",
-                                fontWeight: "600",
-                            }}
-                            onFocus={(e) => {
-                                e.currentTarget.style.borderColor = "#667eea";
-                                e.currentTarget.style.boxShadow =
-                                    "0 0 0 4px rgba(102, 126, 234, 0.1)";
-                            }}
-                            onBlur={(e) => {
-                                e.currentTarget.style.borderColor = "#e5e7eb";
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
+                            className="w-full max-w-md p-5 border-4 border-gray-300 rounded-lg text-xl text-center font-semibold transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         />
                     </div>
                 );
 
             case 2:
                 return (
-                    <div style={{ padding: "1rem" }}>
-                        <h2
-                            style={{
-                                fontSize: "28px",
-                                fontWeight: "700",
-                                marginBottom: "2rem",
-                                color: "#374151",
-                                textAlign: "center",
-                            }}
-                        >
+                    <div className="p-4">
+                        <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">
                             Choose Your Race & Class
                         </h2>
 
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
-                                gap: "2rem",
-                                marginBottom: "2rem",
-                            }}
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             {/* Race Selection */}
                             <div>
-                                <h3
-                                    style={{
-                                        fontSize: "20px",
-                                        fontWeight: "600",
-                                        marginBottom: "1rem",
-                                        color: "#374151",
-                                    }}
-                                >
+                                <h3 className="text-xl font-semibold mb-4 text-gray-800">
                                     🌟 Race
                                 </h3>
-                                <div style={{ display: "grid", gap: "0.75rem" }}>
+                                <div className="grid gap-3">
                                     {Object.entries(raceOptions).map(([key, race]) => (
                                         <button
                                             key={key}
                                             onClick={() => setSelectedRace(race)}
-                                            style={{
-                                                padding: "1rem",
-                                                border:
-                                                    selectedRace.name === race.name
-                                                        ? "3px solid #667eea"
-                                                        : "2px solid #e5e7eb",
-                                                borderRadius: "12px",
-                                                background:
-                                                    selectedRace.name === race.name
-                                                        ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)"
-                                                        : "white",
-                                                cursor: "pointer",
-                                                textAlign: "left",
-                                                transition: "all 0.2s ease",
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                if (selectedRace.name !== race.name) {
-                                                    e.currentTarget.style.borderColor = "#cbd5e0";
-                                                    e.currentTarget.style.backgroundColor =
-                                                        "#f7fafc";
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (selectedRace.name !== race.name) {
-                                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                                    e.currentTarget.style.backgroundColor = "white";
-                                                }
-                                            }}
+                                            className={`p-4 rounded-lg transition-all duration-200 text-left focus:outline-none ${
+                                                selectedRace.name === race.name
+                                                    ? "border-4 border-indigo-500 bg-indigo-100"
+                                                    : "border-2 border-gray-300 bg-white"
+                                            }`}
                                         >
-                                            <div
-                                                style={{
-                                                    fontWeight: "600",
-                                                    fontSize: "16px",
-                                                    marginBottom: "0.5rem",
-                                                }}
-                                            >
+                                            <div className="font-semibold text-lg mb-1">
                                                 {race.name}
                                             </div>
-                                            <div style={{ fontSize: "14px", color: "#6b7280" }}>
+                                            <div className="text-sm text-gray-600">
                                                 {race.traits.slice(0, 2).join(", ")}
                                             </div>
                                         </button>
@@ -485,60 +407,24 @@ export default function CreateCharacterPage() {
 
                             {/* Class Selection */}
                             <div>
-                                <h3
-                                    style={{
-                                        fontSize: "20px",
-                                        fontWeight: "600",
-                                        marginBottom: "1rem",
-                                        color: "#374151",
-                                    }}
-                                >
+                                <h3 className="text-xl font-semibold mb-4 text-gray-800">
                                     ⚔️ Class
                                 </h3>
-                                <div style={{ display: "grid", gap: "0.75rem" }}>
+                                <div className="grid gap-3">
                                     {Object.entries(classOptions).map(([key, charClass]) => (
                                         <button
                                             key={key}
                                             onClick={() => setSelectedClass(charClass)}
-                                            style={{
-                                                padding: "1rem",
-                                                border:
-                                                    selectedClass.name === charClass.name
-                                                        ? "3px solid #667eea"
-                                                        : "2px solid #e5e7eb",
-                                                borderRadius: "12px",
-                                                background:
-                                                    selectedClass.name === charClass.name
-                                                        ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)"
-                                                        : "white",
-                                                cursor: "pointer",
-                                                textAlign: "left",
-                                                transition: "all 0.2s ease",
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                if (selectedClass.name !== charClass.name) {
-                                                    e.currentTarget.style.borderColor = "#cbd5e0";
-                                                    e.currentTarget.style.backgroundColor =
-                                                        "#f7fafc";
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (selectedClass.name !== charClass.name) {
-                                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                                    e.currentTarget.style.backgroundColor = "white";
-                                                }
-                                            }}
+                                            className={`p-4 rounded-lg transition-all duration-200 text-left focus:outline-none ${
+                                                selectedClass.name === charClass.name
+                                                    ? "border-4 border-indigo-500 bg-indigo-100"
+                                                    : "border-2 border-gray-300 bg-white"
+                                            }`}
                                         >
-                                            <div
-                                                style={{
-                                                    fontWeight: "600",
-                                                    fontSize: "16px",
-                                                    marginBottom: "0.5rem",
-                                                }}
-                                            >
+                                            <div className="font-semibold text-lg mb-1">
                                                 {charClass.name}
                                             </div>
-                                            <div style={{ fontSize: "14px", color: "#6b7280" }}>
+                                            <div className="text-sm text-gray-600">
                                                 Hit Die: {charClass.hitDie} • Primary:{" "}
                                                 {charClass.primaryAbility}
                                             </div>
@@ -549,31 +435,11 @@ export default function CreateCharacterPage() {
                         </div>
 
                         {/* Selected Info Display */}
-                        <div
-                            style={{
-                                background: "#f8fafc",
-                                borderRadius: "12px",
-                                padding: "1.5rem",
-                                border: "2px solid #e2e8f0",
-                            }}
-                        >
-                            <h4
-                                style={{
-                                    margin: "0 0 1rem 0",
-                                    color: "#374151",
-                                    fontWeight: "600",
-                                }}
-                            >
+                        <div className="bg-gray-100 rounded-lg p-6 border-2 border-gray-300">
+                            <h4 className="mb-4 text-gray-800 font-semibold">
                                 Your Character: {selectedRace.name} {selectedClass.name}
                             </h4>
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 1fr",
-                                    gap: "1rem",
-                                    fontSize: "14px",
-                                }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <strong>Race Traits:</strong> {selectedRace.traits.join(", ")}
                                 </div>
@@ -588,55 +454,23 @@ export default function CreateCharacterPage() {
 
             case 3:
                 return (
-                    <div style={{ padding: "1rem" }}>
-                        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                            <h2
-                                style={{
-                                    fontSize: "28px",
-                                    fontWeight: "700",
-                                    marginBottom: "1rem",
-                                    color: "#374151",
-                                }}
-                            >
+                    <div className="p-4">
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold mb-4 text-gray-800">
                                 Set Your Ability Scores
                             </h2>
-                            <p style={{ color: "#6b7280", marginBottom: "1rem" }}>
+                            <p className="text-gray-600 mb-4">
                                 Adjust your character's core attributes (8-18 range recommended)
                             </p>
                             <button
                                 onClick={rollStats}
-                                style={{
-                                    padding: "0.75rem 1.5rem",
-                                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    fontWeight: "600",
-                                    fontSize: "14px",
-                                    transition: "all 0.2s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 5px 15px rgba(245, 158, 11, 0.3)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center justify-center mx-auto"
                             >
-                                🎲 Roll Random Stats
+                                <span className="mr-2">🎲</span> Roll Random Stats
                             </button>
                         </div>
 
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(3, 1fr)",
-                                gap: "1.5rem",
-                            }}
-                        >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {(Object.keys(stats) as Array<keyof CharacterStats>).map((stat) => {
                                 const baseScore = stats[stat];
                                 const raceBonus = selectedRace.abilityScoreIncrease[stat] || 0;
@@ -646,48 +480,16 @@ export default function CreateCharacterPage() {
                                 return (
                                     <div
                                         key={stat}
-                                        style={{
-                                            background: "#f8fafc",
-                                            borderRadius: "16px",
-                                            padding: "1.5rem",
-                                            textAlign: "center",
-                                            border: "2px solid #e2e8f0",
-                                        }}
+                                        className="bg-gray-100 rounded-lg p-6 text-center border-2 border-gray-300"
                                     >
-                                        <div
-                                            style={{
-                                                fontSize: "14px",
-                                                fontWeight: "600",
-                                                color: "#374151",
-                                                marginBottom: "0.5rem",
-                                                textTransform: "capitalize",
-                                            }}
-                                        >
+                                        <div className="text-sm font-semibold text-gray-800 mb-2">
                                             {stat}
                                         </div>
 
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                gap: "0.5rem",
-                                                marginBottom: "0.75rem",
-                                            }}
-                                        >
+                                        <div className="flex items-center justify-center gap-2 mb-3">
                                             <button
                                                 onClick={() => updateStat(stat, baseScore - 1)}
-                                                style={{
-                                                    width: "32px",
-                                                    height: "32px",
-                                                    borderRadius: "6px",
-                                                    border: "2px solid #e5e7eb",
-                                                    background: "white",
-                                                    cursor: "pointer",
-                                                    fontSize: "16px",
-                                                    fontWeight: "600",
-                                                    color: "#374151",
-                                                }}
+                                                className="w-8 h-8 rounded-full border-2 border-gray-300 bg-white text-gray-800 font-bold transition-all duration-200 flex items-center justify-center"
                                             >
                                                 −
                                             </button>
@@ -700,66 +502,28 @@ export default function CreateCharacterPage() {
                                                 onChange={(e) =>
                                                     updateStat(stat, parseInt(e.target.value) || 1)
                                                 }
-                                                style={{
-                                                    width: "80px",
-                                                    padding: "8px",
-                                                    border: "2px solid #e5e7eb",
-                                                    borderRadius: "8px",
-                                                    fontSize: "18px",
-                                                    fontWeight: "700",
-                                                    textAlign: "center",
-                                                    outline: "none",
-                                                }}
+                                                className="w-20 p-2 border-2 border-gray-300 rounded-lg text-xl font-bold text-center outline-none"
                                             />
 
                                             <button
                                                 onClick={() => updateStat(stat, baseScore + 1)}
-                                                style={{
-                                                    width: "32px",
-                                                    height: "32px",
-                                                    borderRadius: "6px",
-                                                    border: "2px solid #e5e7eb",
-                                                    background: "white",
-                                                    cursor: "pointer",
-                                                    fontSize: "16px",
-                                                    fontWeight: "600",
-                                                    color: "#374151",
-                                                }}
+                                                className="w-8 h-8 rounded-full border-2 border-gray-300 bg-white text-gray-800 font-bold transition-all duration-200 flex items-center justify-center"
                                             >
                                                 +
                                             </button>
                                         </div>
 
                                         {raceBonus > 0 && (
-                                            <div
-                                                style={{
-                                                    fontSize: "12px",
-                                                    color: "#059669",
-                                                    marginBottom: "0.5rem",
-                                                }}
-                                            >
+                                            <div className="text-green-600 text-sm mb-2">
                                                 +{raceBonus} racial bonus
                                             </div>
                                         )}
 
-                                        <div
-                                            style={{
-                                                fontSize: "24px",
-                                                fontWeight: "800",
-                                                color: "#667eea",
-                                                marginBottom: "0.25rem",
-                                            }}
-                                        >
+                                        <div className="text-2xl font-extrabold text-indigo-600 mb-1">
                                             {totalScore}
                                         </div>
 
-                                        <div
-                                            style={{
-                                                fontSize: "12px",
-                                                color: "#6b7280",
-                                                fontWeight: "500",
-                                            }}
-                                        >
+                                        <div className="text-xs text-gray-500 font-medium">
                                             Modifier: {modifier >= 0 ? "+" : ""}
                                             {modifier}
                                         </div>
@@ -772,60 +536,29 @@ export default function CreateCharacterPage() {
 
             case 4:
                 return (
-                    <div style={{ padding: "1rem" }}>
-                        <h2
-                            style={{
-                                fontSize: "28px",
-                                fontWeight: "700",
-                                marginBottom: "2rem",
-                                color: "#374151",
-                                textAlign: "center",
-                            }}
-                        >
+                    <div className="p-4">
+                        <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">
                             Choose Your Background
                         </h2>
 
-                        <div style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
+                        <div className="grid gap-4 mb-8">
                             {Object.entries(backgroundOptions).map(([key, bg]) => (
                                 <button
                                     key={key}
                                     onClick={() => setSelectedBackground(bg)}
-                                    style={{
-                                        padding: "1.5rem",
-                                        border:
-                                            selectedBackground.name === bg.name
-                                                ? "3px solid #667eea"
-                                                : "2px solid #e5e7eb",
-                                        borderRadius: "12px",
-                                        background:
-                                            selectedBackground.name === bg.name
-                                                ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)"
-                                                : "white",
-                                        cursor: "pointer",
-                                        textAlign: "left",
-                                        transition: "all 0.2s ease",
-                                    }}
+                                    className={`p-6 rounded-lg transition-all duration-200 text-left focus:outline-none ${
+                                        selectedBackground.name === bg.name
+                                            ? "border-4 border-indigo-500 bg-indigo-100"
+                                            : "border-2 border-gray-300 bg-white"
+                                    }`}
                                 >
-                                    <div
-                                        style={{
-                                            fontWeight: "700",
-                                            fontSize: "18px",
-                                            marginBottom: "0.5rem",
-                                            color: "#374151",
-                                        }}
-                                    >
+                                    <div className="font-bold text-lg mb-2 text-gray-800">
                                         {bg.name}
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: "14px",
-                                            color: "#6b7280",
-                                            marginBottom: "1rem",
-                                        }}
-                                    >
+                                    <div className="text-sm text-gray-600 mb-2">
                                         {bg.description}
                                     </div>
-                                    <div style={{ fontSize: "12px", color: "#4b5563" }}>
+                                    <div className="text-xs text-gray-500">
                                         <strong>Skills:</strong> {bg.skillProficiencies.join(", ")}
                                         {bg.features.length > 0 && (
                                             <span>
@@ -839,42 +572,14 @@ export default function CreateCharacterPage() {
                         </div>
 
                         <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    marginBottom: "0.5rem",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                }}
-                            >
+                            <label className="block mb-2 font-semibold text-gray-800">
                                 📖 Character Backstory (Optional)
                             </label>
                             <textarea
                                 value={backstory}
                                 onChange={(e) => setBackstory(e.target.value)}
                                 placeholder="Tell us about your character's background, motivations, and history..."
-                                style={{
-                                    width: "100%",
-                                    padding: "16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    minHeight: "120px",
-                                    resize: "vertical",
-                                    outline: "none",
-                                    fontFamily: "inherit",
-                                    transition: "all 0.2s ease",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg resize-none outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                             />
                         </div>
                     </div>
@@ -882,80 +587,32 @@ export default function CreateCharacterPage() {
 
             case 5:
                 return (
-                    <div style={{ padding: "2rem", textAlign: "center" }}>
-                        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>✨</div>
-                        <h2
-                            style={{
-                                fontSize: "28px",
-                                fontWeight: "700",
-                                marginBottom: "2rem",
-                                color: "#374151",
-                            }}
-                        >
+                    <div className="p-8 text-center">
+                        <div className="text-6xl mb-4">✨</div>
+                        <h2 className="text-3xl font-bold mb-8 text-gray-800">
                             Review Your Character
                         </h2>
 
-                        <div
-                            style={{
-                                background: "#f8fafc",
-                                borderRadius: "16px",
-                                padding: "2rem",
-                                border: "2px solid #e2e8f0",
-                                textAlign: "left",
-                                maxWidth: "600px",
-                                margin: "0 auto",
-                            }}
-                        >
-                            <h3
-                                style={{
-                                    fontSize: "24px",
-                                    fontWeight: "700",
-                                    color: "#374151",
-                                    marginBottom: "1.5rem",
-                                    textAlign: "center",
-                                }}
-                            >
-                                {name}
-                            </h3>
+                        <div className="bg-gray-100 rounded-lg p-6 border-2 border-gray-300 text-left max-w-2xl mx-auto">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-4">{name}</h3>
 
-                            <div style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                    <span style={{ fontWeight: "600", color: "#374151" }}>
-                                        Race:
-                                    </span>
+                            <div className="grid gap-4 mb-4">
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-800">Race:</span>
                                     <span>{selectedRace.name}</span>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                    <span style={{ fontWeight: "600", color: "#374151" }}>
-                                        Class:
-                                    </span>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-800">Class:</span>
                                     <span>{selectedClass.name}</span>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                    <span style={{ fontWeight: "600", color: "#374151" }}>
-                                        Background:
-                                    </span>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-800">Background:</span>
                                     <span>{selectedBackground.name}</span>
                                 </div>
                             </div>
 
-                            <h4
-                                style={{
-                                    fontWeight: "600",
-                                    color: "#374151",
-                                    marginBottom: "1rem",
-                                }}
-                            >
-                                Ability Scores:
-                            </h4>
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(3, 1fr)",
-                                    gap: "0.5rem",
-                                    marginBottom: "1.5rem",
-                                }}
-                            >
+                            <h4 className="font-semibold text-gray-800 mb-2">Ability Scores:</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                 {(Object.keys(stats) as Array<keyof CharacterStats>).map((stat) => {
                                     const baseScore = stats[stat];
                                     const raceBonus = selectedRace.abilityScoreIncrease[stat] || 0;
@@ -963,19 +620,11 @@ export default function CreateCharacterPage() {
                                     const modifier = getModifier(totalScore);
 
                                     return (
-                                        <div
-                                            key={stat}
-                                            style={{ fontSize: "14px", textAlign: "center" }}
-                                        >
-                                            <div
-                                                style={{
-                                                    fontWeight: "600",
-                                                    textTransform: "capitalize",
-                                                }}
-                                            >
+                                        <div key={stat} className="text-center">
+                                            <div className="font-semibold text-gray-800">
                                                 {stat}
                                             </div>
-                                            <div style={{ color: "#667eea", fontWeight: "700" }}>
+                                            <div className="text-indigo-600 font-bold">
                                                 {totalScore} ({modifier >= 0 ? "+" : ""}
                                                 {modifier})
                                             </div>
@@ -986,23 +635,8 @@ export default function CreateCharacterPage() {
 
                             {backstory && (
                                 <div>
-                                    <h4
-                                        style={{
-                                            fontWeight: "600",
-                                            color: "#374151",
-                                            marginBottom: "0.5rem",
-                                        }}
-                                    >
-                                        Backstory:
-                                    </h4>
-                                    <p
-                                        style={{
-                                            fontSize: "14px",
-                                            color: "#6b7280",
-                                            lineHeight: "1.5",
-                                            margin: 0,
-                                        }}
-                                    >
+                                    <h4 className="font-semibold text-gray-800 mb-2">Backstory:</h4>
+                                    <p className="text-gray-600 text-sm leading-relaxed">
                                         {backstory}
                                     </p>
                                 </div>
@@ -1010,57 +644,20 @@ export default function CreateCharacterPage() {
                         </div>
 
                         {error && (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                    color: "#dc2626",
-                                    border: "2px solid rgba(239, 68, 68, 0.2)",
-                                    borderRadius: "12px",
-                                    padding: "1rem",
-                                    margin: "1.5rem auto",
-                                    maxWidth: "600px",
-                                    textAlign: "center",
-                                    fontWeight: "600",
-                                }}
-                            >
+                            <div className="bg-red-100 text-red-600 border-2 border-red-200 rounded-lg p-4 mb-4">
                                 ❌ {error}
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} style={{ marginTop: "2rem" }}>
+                        <form onSubmit={handleSubmit} className="mt-4">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                style={{
-                                    padding: "1rem 3rem",
-                                    background: loading
-                                        ? "#9ca3af"
-                                        : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "12px",
-                                    fontSize: "18px",
-                                    fontWeight: "700",
-                                    cursor: loading ? "not-allowed" : "pointer",
-                                    transition: "all 0.3s ease",
-                                    boxShadow: loading
-                                        ? "none"
-                                        : "0 10px 20px rgba(16, 185, 129, 0.3)",
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.transform = "translateY(-2px)";
-                                        e.currentTarget.style.boxShadow =
-                                            "0 15px 30px rgba(16, 185, 129, 0.4)";
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.transform = "translateY(0)";
-                                        e.currentTarget.style.boxShadow =
-                                            "0 10px 20px rgba(16, 185, 129, 0.3)";
-                                    }
-                                }}
+                                className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mx-auto ${
+                                    loading
+                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                        : "bg-gradient-to-r from-green-400 to-teal-500 text-white"
+                                }`}
                             >
                                 {loading ? "✨ Creating Character..." : "🎉 Create Character"}
                             </button>
@@ -1074,49 +671,15 @@ export default function CreateCharacterPage() {
     };
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <main className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 p-5 font-sans">
+            <div className="max-w-2xl mx-auto">
                 {/* Header */}
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "3rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
+                <div className="flex justify-between items-center mb-12 bg-white bg-opacity-90 backdrop-blur-lg rounded-lg p-6 shadow-md">
                     <div>
-                        <h1
-                            style={{
-                                fontSize: "2.5rem",
-                                fontWeight: "700",
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                margin: "0 0 0.5rem 0",
-                            }}
-                        >
+                        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-600 mb-2">
                             ✨ Create Character
                         </h1>
-                        <p
-                            style={{
-                                color: "#64748b",
-                                margin: 0,
-                                fontSize: "1.1rem",
-                            }}
-                        >
+                        <p className="text-gray-600 text-lg">
                             {campaignId
                                 ? "Create a character for your campaign"
                                 : "Build a new character for your adventures"}
@@ -1124,118 +687,58 @@ export default function CreateCharacterPage() {
                     </div>
                     <button
                         onClick={() => router.back()}
-                        style={{
-                            padding: "0.75rem 1.5rem",
-                            background: "rgba(255, 255, 255, 0.2)",
-                            color: "#374151",
-                            border: "2px solid #e5e7eb",
-                            borderRadius: "12px",
-                            cursor: "pointer",
-                            fontWeight: "600",
-                            transition: "all 0.2s ease",
-                            fontSize: "0.95rem",
-                            backdropFilter: "blur(10px)",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
+                        className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold transition-all duration-200 flex items-center"
                     >
                         ← Back
                     </button>
                 </div>
 
                 {/* Progress Steps */}
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "2rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "16px",
-                        padding: "1.5rem",
-                        backdropFilter: "blur(10px)",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                    }}
-                >
+                <div className="flex justify-between mb-8 bg-white bg-opacity-90 rounded-lg p-4 shadow-md">
                     {steps.map((step, index) => (
                         <div
                             key={step.number}
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                flex: 1,
-                                position: "relative",
-                            }}
+                            className="flex flex-col items-center flex-1 relative"
                         >
                             {/* Connector Line */}
                             {index < steps.length - 1 && (
                                 <div
+                                    className="absolute top-5 left-1/2 w-full h-1"
                                     style={{
-                                        position: "absolute",
-                                        top: "20px",
-                                        left: "50%",
-                                        width: "100%",
-                                        height: "2px",
                                         background:
                                             currentStep > step.number ? "#667eea" : "#e5e7eb",
-                                        zIndex: 1,
                                     }}
                                 />
                             )}
 
                             {/* Step Circle */}
                             <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold transition-all duration-300"
                                 style={{
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "50%",
                                     background:
                                         currentStep === step.number
                                             ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
                                             : currentStep > step.number
                                               ? "#10b981"
                                               : "#e5e7eb",
-                                    color: currentStep >= step.number ? "white" : "#9ca3af",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "14px",
-                                    fontWeight: "700",
-                                    zIndex: 2,
-                                    position: "relative",
-                                    transition: "all 0.3s ease",
                                 }}
                             >
                                 {currentStep > step.number ? "✓" : step.icon}
                             </div>
 
                             {/* Step Info */}
-                            <div
-                                style={{
-                                    textAlign: "center",
-                                    marginTop: "0.5rem",
-                                    minHeight: "60px",
-                                }}
-                            >
+                            <div className="text-center mt-2">
                                 <div
+                                    className="text-sm font-semibold"
                                     style={{
-                                        fontSize: "12px",
-                                        fontWeight: "600",
                                         color: currentStep >= step.number ? "#374151" : "#9ca3af",
-                                        marginBottom: "0.25rem",
                                     }}
                                 >
                                     {step.title}
                                 </div>
                                 <div
+                                    className="text-xs"
                                     style={{
-                                        fontSize: "10px",
                                         color: "#6b7280",
                                         lineHeight: "1.3",
                                     }}
@@ -1248,45 +751,21 @@ export default function CreateCharacterPage() {
                 </div>
 
                 {/* Main Content Card */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "20px",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                        backdropFilter: "blur(10px)",
-                        overflow: "hidden",
-                        minHeight: "600px",
-                    }}
-                >
+                <div className="bg-white bg-opacity-90 rounded-2xl shadow-lg p-6 md:p-8 lg:p-10">
                     {renderStep()}
                 </div>
 
                 {/* Navigation Buttons */}
                 {currentStep < 5 && (
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginTop: "2rem",
-                            gap: "1rem",
-                        }}
-                    >
+                    <div className="flex justify-between mt-6 gap-4">
                         <button
                             onClick={prevStep}
                             disabled={currentStep === 1}
-                            style={{
-                                padding: "0.75rem 1.5rem",
-                                background:
-                                    currentStep === 1 ? "#9ca3af" : "rgba(255, 255, 255, 0.9)",
-                                color: currentStep === 1 ? "white" : "#374151",
-                                border: "2px solid #e5e7eb",
-                                borderRadius: "12px",
-                                cursor: currentStep === 1 ? "not-allowed" : "pointer",
-                                fontWeight: "600",
-                                fontSize: "0.95rem",
-                                transition: "all 0.2s ease",
-                                backdropFilter: "blur(10px)",
-                            }}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex-1 ${
+                                currentStep === 1
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-white text-gray-800 shadow-md"
+                            }`}
                         >
                             ← Previous
                         </button>
@@ -1294,36 +773,11 @@ export default function CreateCharacterPage() {
                         <button
                             onClick={nextStep}
                             disabled={!canProceedToNext()}
-                            style={{
-                                padding: "0.75rem 1.5rem",
-                                background: !canProceedToNext()
-                                    ? "#9ca3af"
-                                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "12px",
-                                cursor: !canProceedToNext() ? "not-allowed" : "pointer",
-                                fontWeight: "600",
-                                fontSize: "0.95rem",
-                                transition: "all 0.2s ease",
-                                boxShadow: !canProceedToNext()
-                                    ? "none"
-                                    : "0 5px 15px rgba(102, 126, 234, 0.3)",
-                            }}
-                            onMouseEnter={(e) => {
-                                if (canProceedToNext()) {
-                                    e.currentTarget.style.transform = "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 8px 20px rgba(102, 126, 234, 0.4)";
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (canProceedToNext()) {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 5px 15px rgba(102, 126, 234, 0.3)";
-                                }
-                            }}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex-1 ${
+                                !canProceedToNext()
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-indigo-400 to-purple-600 text-white shadow-md"
+                            }`}
                         >
                             Next →
                         </button>

@@ -69,17 +69,7 @@ export default function MyCharactersPage() {
 
     if (!isAuthenticated) {
         return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
+            <div className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg">
                 Checking authentication...
             </div>
         );
@@ -87,117 +77,35 @@ export default function MyCharactersPage() {
 
     if (loading) {
         return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
+            <div className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg">
                 Loading characters...
             </div>
         );
     }
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <main className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 p-8 font-sans">
+            <div className="max-w-5xl mx-auto">
                 {/* Header */}
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "3rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
+                <div className="flex justify-between items-center mb-12 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl p-8 shadow-lg">
                     <div>
-                        <h1
-                            style={{
-                                fontSize: "2.5rem",
-                                fontWeight: "700",
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                margin: "0 0 0.5rem 0",
-                            }}
-                        >
+                        <h1 className="text-4xl font-extrabold leading-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500">
                             ⚔️ My Characters
                         </h1>
-                        <p
-                            style={{
-                                color: "#64748b",
-                                margin: 0,
-                                fontSize: "1.1rem",
-                            }}
-                        >
+                        <p className="text-gray-600 text-lg">
                             View and manage your character sheets
                         </p>
                     </div>
-                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <div className="flex gap-3 flex-wrap">
                         <button
                             onClick={() => router.push("/create-character")}
-                            style={{
-                                padding: "0.75rem 1.5rem",
-                                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "12px",
-                                cursor: "pointer",
-                                fontWeight: "600",
-                                transition: "all 0.2s ease",
-                                fontSize: "0.95rem",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = "translateY(-2px)";
-                                e.currentTarget.style.boxShadow =
-                                    "0 10px 20px rgba(16, 185, 129, 0.3)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = "translateY(0)";
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
+                            className="px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out"
                         >
                             ✨ Create Character
                         </button>
                         <button
                             onClick={() => router.push("/dashboard")}
-                            style={{
-                                padding: "0.75rem 1.5rem",
-                                background: "rgba(255, 255, 255, 0.2)",
-                                color: "#374151",
-                                border: "2px solid #e5e7eb",
-                                borderRadius: "12px",
-                                cursor: "pointer",
-                                fontWeight: "600",
-                                transition: "all 0.2s ease",
-                                fontSize: "0.95rem",
-                                backdropFilter: "blur(10px)",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                                e.currentTarget.style.transform = "translateY(-2px)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                                e.currentTarget.style.transform = "translateY(0)";
-                            }}
+                            className="px-6 py-3 bg-white bg-opacity-10 text-black rounded-lg border-2 border-white border-opacity-30 backdrop-blur-md shadow-md hover:bg-white hover:bg-opacity-20 transition-all duration-300 ease-in-out"
                         >
                             ← Back to Dashboard
                         </button>
@@ -206,215 +114,90 @@ export default function MyCharactersPage() {
 
                 {/* Error Display */}
                 {error && (
-                    <div
-                        style={{
-                            backgroundColor: "rgba(239, 68, 68, 0.1)",
-                            color: "#dc2626",
-                            border: "2px solid rgba(239, 68, 68, 0.2)",
-                            borderRadius: "12px",
-                            padding: "1rem",
-                            marginBottom: "2rem",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                        }}
-                    >
-                        <span style={{ fontSize: "20px" }}>❌</span>
-                        <div>{error}</div>
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8 rounded-lg">
+                        <div className="flex">
+                            <div className="text-red-400">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M10 14h4v4h-4zm0-8h4v4h-4zm0 8h4v4h-4zm0-8h4v4h-4z"
+                                    />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">{error}</p>
+                            </div>
+                        </div>
                     </div>
                 )}
 
                 {/* Characters List */}
                 {characters.length === 0 ? (
-                    <div
-                        style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                            borderRadius: "20px",
-                            padding: "4rem",
-                            textAlign: "center",
-                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                            backdropFilter: "blur(10px)",
-                        }}
-                    >
-                        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>⚔️</div>
-                        <h2
-                            style={{
-                                fontSize: "28px",
-                                fontWeight: "600",
-                                margin: "0 0 1rem 0",
-                                color: "#374151",
-                            }}
-                        >
+                    <div className="bg-white bg-opacity-95 rounded-2xl p-16 text-center shadow-lg backdrop-blur-md">
+                        <div className="text-6xl mb-4">⚔️</div>
+                        <h2 className="text-3xl font-semibold mb-2 text-gray-800">
                             No Characters Yet
                         </h2>
-                        <p
-                            style={{
-                                color: "#6b7280",
-                                marginBottom: "2rem",
-                                fontSize: "16px",
-                                lineHeight: "1.6",
-                                maxWidth: "500px",
-                                margin: "0 auto 2rem auto",
-                            }}
-                        >
+                        <p className="text-gray-600 mb-6">
                             Start your adventure by creating your first character! You can create
                             characters to use in campaigns or just for fun.
                         </p>
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "1rem",
-                                justifyContent: "center",
-                                flexWrap: "wrap",
-                            }}
-                        >
+                        <div className="flex gap-4 justify-center flex-wrap">
                             <button
                                 onClick={() => router.push("/create-character")}
-                                style={{
-                                    padding: "1rem 2rem",
-                                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "12px",
-                                    cursor: "pointer",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 10px 20px rgba(16, 185, 129, 0.3)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="p-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white border-none rounded-lg cursor-pointer font-semibold text-lg transition-all duration-300 ease-in-out"
                             >
                                 ✨ Create First Character
                             </button>
                             <button
                                 onClick={() => router.push("/join")}
-                                style={{
-                                    padding: "1rem 2rem",
-                                    background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "12px",
-                                    cursor: "pointer",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 10px 20px rgba(59, 130, 246, 0.3)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-none rounded-lg cursor-pointer font-semibold text-lg transition-all duration-300 ease-in-out"
                             >
                                 🎯 Join Campaign
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <div
-                        style={{
-                            display: "grid",
-                            gap: "1.5rem",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-                        }}
-                    >
+                    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {characters.map((character) => (
                             <div
                                 key={character.id}
-                                style={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                    borderRadius: "16px",
-                                    padding: "1.5rem",
-                                    cursor: "pointer",
-                                    transition: "all 0.3s ease",
-                                    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                                    backdropFilter: "blur(10px)",
-                                }}
+                                className="bg-white bg-opacity-95 rounded-2xl p-6 cursor-pointer transition-all duration-300 ease-in-out shadow-md backdrop-blur-md"
                                 onClick={() => navigateToCharacter(character.id)}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = "translateY(-5px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 20px 40px rgba(0,0,0,0.15)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 10px 25px rgba(0,0,0,0.08)";
-                                }}
                             >
                                 {/* Character Header */}
-                                <div
-                                    style={{
-                                        borderBottom: "2px solid #f3f4f6",
-                                        paddingBottom: "1rem",
-                                        marginBottom: "1rem",
-                                    }}
-                                >
-                                    <h3
-                                        style={{
-                                            fontSize: "20px",
-                                            fontWeight: "700",
-                                            margin: "0 0 0.5rem 0",
-                                            color: "#1f2937",
-                                        }}
-                                    >
+                                <div className="border-b pb-4 mb-4">
+                                    <h3 className="text-xl font-bold text-gray-800">
                                         {character.name}
                                     </h3>
-                                    <div style={{ fontSize: "14px", color: "#6b7280" }}>
+                                    <div className="text-sm text-gray-500">
                                         Level {character.level} {character.race.name}{" "}
                                         {character.characterClass.name}
                                     </div>
                                 </div>
 
                                 {/* Stats Grid */}
-                                <div
-                                    style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(3, 1fr)",
-                                        gap: "0.75rem",
-                                        marginBottom: "1rem",
-                                    }}
-                                >
+                                <div className="grid grid-cols-3 gap-4 mb-4">
                                     {Object.entries(character.stats).map(([stat, value]) => (
                                         <div
                                             key={stat}
-                                            style={{
-                                                textAlign: "center",
-                                                backgroundColor: "#f9fafb",
-                                                borderRadius: "8px",
-                                                padding: "0.5rem",
-                                            }}
+                                            className="text-center bg-gray-100 rounded-lg p-4"
                                         >
-                                            <div
-                                                style={{
-                                                    fontSize: "18px",
-                                                    fontWeight: "700",
-                                                    color: "#374151",
-                                                }}
-                                            >
+                                            <div className="text-lg font-bold text-gray-700">
                                                 {value}
                                             </div>
-                                            <div
-                                                style={{
-                                                    fontSize: "12px",
-                                                    color: "#6b7280",
-                                                    textTransform: "uppercase",
-                                                    letterSpacing: "0.5px",
-                                                }}
-                                            >
+                                            <div className="text-xs text-gray-500 uppercase">
                                                 {stat.slice(0, 3)}
                                             </div>
-                                            <div style={{ fontSize: "12px", color: "#9ca3af" }}>
+                                            <div className="text-xs text-gray-400">
                                                 {getModifier(value)}
                                             </div>
                                         </div>
@@ -422,88 +205,29 @@ export default function MyCharactersPage() {
                                 </div>
 
                                 {/* Health and AC */}
-                                <div
-                                    style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "1fr 1fr",
-                                        gap: "0.75rem",
-                                        marginBottom: "1rem",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            textAlign: "center",
-                                            backgroundColor: "#fef2f2",
-                                            borderRadius: "8px",
-                                            padding: "0.5rem",
-                                            border: "2px solid #fecaca",
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontSize: "16px",
-                                                fontWeight: "700",
-                                                color: "#dc2626",
-                                            }}
-                                        >
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div className="text-center bg-red-50 rounded-lg p-4 border border-red-200">
+                                        <div className="text-lg font-bold text-red-600">
                                             {character.hitPoints.current}/
                                             {character.hitPoints.maximum}
                                         </div>
-                                        <div style={{ fontSize: "12px", color: "#7f1d1d" }}>
-                                            Hit Points
-                                        </div>
+                                        <div className="text-xs text-red-500">Hit Points</div>
                                     </div>
-                                    <div
-                                        style={{
-                                            textAlign: "center",
-                                            backgroundColor: "#f0f9ff",
-                                            borderRadius: "8px",
-                                            padding: "0.5rem",
-                                            border: "2px solid #bae6fd",
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontSize: "16px",
-                                                fontWeight: "700",
-                                                color: "#0369a1",
-                                            }}
-                                        >
+                                    <div className="text-center bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                        <div className="text-lg font-bold text-blue-600">
                                             {character.armorClass}
                                         </div>
-                                        <div style={{ fontSize: "12px", color: "#075985" }}>
-                                            Armor Class
-                                        </div>
+                                        <div className="text-xs text-blue-500">Armor Class</div>
                                     </div>
                                 </div>
 
                                 {/* Campaign Info */}
                                 {character.campaignId ? (
-                                    <div
-                                        style={{
-                                            backgroundColor: "#f0fdf4",
-                                            border: "2px solid #bbf7d0",
-                                            borderRadius: "8px",
-                                            padding: "0.75rem",
-                                            fontSize: "12px",
-                                            color: "#166534",
-                                            textAlign: "center",
-                                        }}
-                                    >
+                                    <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg text-green-700 text-sm mb-4">
                                         🏛️ In Campaign
                                     </div>
                                 ) : (
-                                    <div
-                                        style={{
-                                            backgroundColor: "#fefce8",
-                                            border: "2px solid #fde047",
-                                            borderRadius: "8px",
-                                            padding: "0.75rem",
-                                            fontSize: "12px",
-                                            color: "#a16207",
-                                            textAlign: "center",
-                                        }}
-                                    >
+                                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg text-yellow-700 text-sm mb-4">
                                         ⭐ Available for Campaign
                                     </div>
                                 )}

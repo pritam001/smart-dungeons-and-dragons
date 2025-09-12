@@ -86,159 +86,50 @@ export default function CreateCampaignPage() {
 
     if (!isAuthenticated) {
         return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
+            <div className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg">
                 Checking authentication...
             </div>
         );
     }
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "20px",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: "600px",
-                    margin: "0 auto",
-                    paddingTop: "40px",
-                }}
-            >
+        <div className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 p-5 font-sans">
+            <div className="max-w-2xl mx-auto pt-10">
                 {/* Header */}
-                <div
-                    style={{
-                        textAlign: "center",
-                        marginBottom: "40px",
-                    }}
-                >
+                <div className="text-center mb-10">
                     <button
                         onClick={() => router.push("/dashboard")}
-                        style={{
-                            position: "absolute",
-                            top: "20px",
-                            left: "20px",
-                            backgroundColor: "rgba(255, 255, 255, 0.2)",
-                            color: "white",
-                            border: "none",
-                            padding: "12px 20px",
-                            borderRadius: "25px",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            backdropFilter: "blur(10px)",
-                            transition: "all 0.3s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
+                        className="absolute top-5 left-5 bg-white bg-opacity-20 text-white rounded-full px-4 py-2 text-sm font-medium backdrop-blur-md transition-all duration-300 ease-in-out hover:bg-opacity-30 transform hover:-translate-y-0.5"
                     >
                         ← Back to Dashboard
                     </button>
 
-                    <h1
-                        style={{
-                            color: "white",
-                            fontSize: "42px",
-                            fontWeight: "700",
-                            margin: "0 0 12px 0",
-                            textShadow: "0 4px 8px rgba(0,0,0,0.3)",
-                        }}
-                    >
+                    <h1 className="text-white text-4xl font-extrabold mb-3 drop-shadow-lg">
                         🎲 Create Campaign
                     </h1>
-                    <p
-                        style={{
-                            color: "rgba(255, 255, 255, 0.9)",
-                            fontSize: "18px",
-                            margin: "0",
-                            fontWeight: "300",
-                        }}
-                    >
+                    <p className="text-white text-lg mb-0 font-light">
                         Start your new D&D adventure with AI assistance
                     </p>
                 </div>
 
                 {/* Main Form Card */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "20px",
-                        padding: "40px",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                        backdropFilter: "blur(10px)",
-                    }}
-                >
-                    <form
-                        onSubmit={submit}
-                        style={{ display: "flex", flexDirection: "column", gap: "24px" }}
-                    >
+                <div className="bg-white bg-opacity-95 rounded-2xl p-10 shadow-md backdrop-blur-md">
+                    <form onSubmit={submit} className="flex flex-col gap-6">
                         {/* Campaign Name */}
                         <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                    marginBottom: "8px",
-                                }}
-                            >
+                            <label className="block font-semibold text-base text-gray-700 mb-2">
                                 Campaign Name
                             </label>
                             <input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    padding: "14px 16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                    outline: "none",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
                         </div>
 
                         {/* Campaign Description */}
                         <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                    marginBottom: "8px",
-                                }}
-                            >
+                            <label className="block font-semibold text-base text-gray-700 mb-2">
                                 Description (Optional)
                             </label>
                             <textarea
@@ -246,67 +137,22 @@ export default function CreateCampaignPage() {
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Brief description of your campaign..."
                                 rows={3}
-                                style={{
-                                    width: "100%",
-                                    padding: "14px 16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                    outline: "none",
-                                    resize: "vertical",
-                                    fontFamily: "inherit",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                             />
                         </div>
 
                         {/* Privacy Setting */}
-                        <div
-                            style={{
-                                padding: "20px",
-                                backgroundColor: "#f8fafc",
-                                borderRadius: "12px",
-                                border: "2px solid #e2e8f0",
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    fontSize: "16px",
-                                    fontWeight: "500",
-                                }}
-                            >
+                        <div className="p-5 bg-gray-100 rounded-lg border-2 border-gray-200">
+                            <label className="flex items-center cursor-pointer text-base font-medium">
                                 <input
                                     type="checkbox"
                                     checked={isPrivate}
                                     onChange={(e) => setIsPrivate(e.target.checked)}
-                                    style={{
-                                        width: "20px",
-                                        height: "20px",
-                                        marginRight: "12px",
-                                        accentColor: "#667eea",
-                                    }}
+                                    className="w-5 h-5 mr-3 accent-indigo-500"
                                 />
                                 🔒 Private Campaign
                             </label>
-                            <p
-                                style={{
-                                    margin: "8px 0 0 32px",
-                                    fontSize: "14px",
-                                    color: "#6b7280",
-                                }}
-                            >
+                            <p className="mt-2 ml-8 text-sm text-gray-500">
                                 {isPrivate
                                     ? "Only players with the room code can join"
                                     : "Campaign will be visible in the public browser"}
@@ -315,98 +161,37 @@ export default function CreateCampaignPage() {
 
                         {/* Creator Display Name */}
                         <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                    marginBottom: "8px",
-                                }}
-                            >
+                            <label className="block font-semibold text-base text-gray-700 mb-2">
                                 Your Display Name
                             </label>
                             <input
                                 value={creatorDisplayName}
                                 onChange={(e) => setCreatorDisplayName(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    padding: "14px 16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                    outline: "none",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
                         </div>
 
                         {/* GM Type */}
-                        <div
-                            style={{
-                                padding: "20px",
-                                backgroundColor: "#f8fafc",
-                                borderRadius: "12px",
-                                border: "2px solid #e2e8f0",
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    fontSize: "16px",
-                                    fontWeight: "500",
-                                    marginBottom: "12px",
-                                }}
-                            >
+                        <div className="p-5 bg-gray-100 rounded-lg border-2 border-gray-200">
+                            <label className="flex items-center cursor-pointer text-base font-medium mb-3">
                                 <input
                                     type="checkbox"
                                     checked={gmIsHuman}
                                     onChange={(e) => setGmIsHuman(e.target.checked)}
-                                    style={{
-                                        width: "20px",
-                                        height: "20px",
-                                        marginRight: "12px",
-                                        accentColor: "#667eea",
-                                    }}
+                                    className="w-5 h-5 mr-3 accent-indigo-500"
                                 />
                                 🎭 Human Game Master
                             </label>
 
                             {!gmIsHuman && (
-                                <div style={{ marginLeft: "32px" }}>
-                                    <label
-                                        style={{
-                                            display: "block",
-                                            fontWeight: "500",
-                                            fontSize: "14px",
-                                            color: "#6b7280",
-                                            marginBottom: "6px",
-                                        }}
-                                    >
+                                <div className="ml-8">
+                                    <label className="block font-medium text-sm text-gray-600 mb-2">
                                         AI Model
                                     </label>
                                     <input
                                         value={gmAIModelId}
                                         onChange={(e) => setGmAIModelId(e.target.value)}
-                                        style={{
-                                            width: "100%",
-                                            padding: "10px 12px",
-                                            border: "1px solid #d1d5db",
-                                            borderRadius: "8px",
-                                            fontSize: "14px",
-                                            outline: "none",
-                                        }}
+                                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
                                     />
                                 </div>
                             )}
@@ -414,15 +199,7 @@ export default function CreateCampaignPage() {
 
                         {/* Seat Count */}
                         <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                    marginBottom: "8px",
-                                }}
-                            >
+                            <label className="block font-semibold text-base text-gray-700 mb-2">
                                 Number of Player Seats
                             </label>
                             <input
@@ -431,74 +208,25 @@ export default function CreateCampaignPage() {
                                 max={8}
                                 value={seatCount}
                                 onChange={(e) => setSeatCount(Number(e.target.value))}
-                                style={{
-                                    width: "100%",
-                                    padding: "14px 16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    transition: "all 0.3s ease",
-                                    outline: "none",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className="w-full p-3 border-2 border-gray-300 rounded-lg text-base transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
-                            <p
-                                style={{
-                                    margin: "6px 0 0 0",
-                                    fontSize: "14px",
-                                    color: "#6b7280",
-                                }}
-                            >
+                            <p className="mt-1 text-sm text-gray-500">
                                 You can add more seats later (max 8 total including GM)
                             </p>
                         </div>
 
                         {/* AI Default */}
-                        <div
-                            style={{
-                                padding: "20px",
-                                backgroundColor: "#f8fafc",
-                                borderRadius: "12px",
-                                border: "2px solid #e2e8f0",
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    fontSize: "16px",
-                                    fontWeight: "500",
-                                }}
-                            >
+                        <div className="p-5 bg-gray-100 rounded-lg border-2 border-gray-200">
+                            <label className="flex items-center cursor-pointer text-base font-medium">
                                 <input
                                     type="checkbox"
                                     checked={aiEnabledDefault}
                                     onChange={(e) => setAiEnabledDefault(e.target.checked)}
-                                    style={{
-                                        width: "20px",
-                                        height: "20px",
-                                        marginRight: "12px",
-                                        accentColor: "#667eea",
-                                    }}
+                                    className="w-5 h-5 mr-3 accent-indigo-500"
                                 />
                                 🤖 Enable AI for empty seats by default
                             </label>
-                            <p
-                                style={{
-                                    margin: "8px 0 0 32px",
-                                    fontSize: "14px",
-                                    color: "#6b7280",
-                                }}
-                            >
+                            <p className="mt-2 ml-8 text-sm text-gray-500">
                                 Empty seats will have AI assistance enabled when created
                             </p>
                         </div>
@@ -507,33 +235,7 @@ export default function CreateCampaignPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            style={{
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                color: "white",
-                                border: "none",
-                                padding: "16px 32px",
-                                borderRadius: "12px",
-                                fontSize: "18px",
-                                fontWeight: "600",
-                                cursor: loading ? "not-allowed" : "pointer",
-                                transition: "all 0.3s ease",
-                                opacity: loading ? 0.7 : 1,
-                                boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
-                            }}
-                            onMouseEnter={(e) => {
-                                if (!loading) {
-                                    e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 8px 24px rgba(102, 126, 234, 0.5)";
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (!loading) {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 4px 12px rgba(102, 126, 234, 0.4)";
-                                }
-                            }}
+                            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg px-4 py-3 text-lg font-semibold transition-all duration-300 ease-in-out flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-70"
                         >
                             {loading ? "Creating Campaign..." : "🚀 Create Campaign"}
                         </button>
@@ -541,78 +243,30 @@ export default function CreateCampaignPage() {
 
                     {/* Result Display */}
                     {result && (
-                        <div style={{ marginTop: "32px" }}>
+                        <div className="mt-8">
                             {result.error ? (
-                                <div
-                                    style={{
-                                        backgroundColor: "#fef2f2",
-                                        color: "#dc2626",
-                                        border: "2px solid #fecaca",
-                                        borderRadius: "12px",
-                                        padding: "20px",
-                                    }}
-                                >
-                                    <h3
-                                        style={{
-                                            margin: "0 0 8px 0",
-                                            fontSize: "18px",
-                                            fontWeight: "600",
-                                        }}
-                                    >
-                                        ❌ Error
-                                    </h3>
-                                    <p style={{ margin: "0", fontSize: "16px" }}>{result.error}</p>
+                                <div className="bg-red-50 text-red-700 border-2 border-red-300 rounded-lg p-5">
+                                    <h3 className="text-lg font-semibold mb-2">❌ Error</h3>
+                                    <p className="text-base">{result.error}</p>
                                 </div>
                             ) : result.campaign ? (
-                                <div
-                                    style={{
-                                        backgroundColor: "#ecfdf5",
-                                        color: "#065f46",
-                                        border: "2px solid #a7f3d0",
-                                        borderRadius: "12px",
-                                        padding: "20px",
-                                    }}
-                                >
-                                    <h3
-                                        style={{
-                                            margin: "0 0 16px 0",
-                                            fontSize: "20px",
-                                            fontWeight: "600",
-                                        }}
-                                    >
+                                <div className="bg-green-50 text-green-700 border-2 border-green-300 rounded-lg p-5">
+                                    <h3 className="text-lg font-semibold mb-2">
                                         ✅ Campaign Created Successfully!
                                     </h3>
-                                    <div style={{ marginBottom: "12px" }}>
+                                    <div className="mb-3">
                                         <strong>Campaign:</strong> {result.campaign.name}
                                     </div>
-                                    <div style={{ marginBottom: "12px" }}>
+                                    <div className="mb-3">
                                         <strong>Room Code:</strong>
-                                        <span
-                                            style={{
-                                                backgroundColor: "#10b981",
-                                                color: "white",
-                                                padding: "4px 12px",
-                                                borderRadius: "6px",
-                                                marginLeft: "8px",
-                                                fontFamily: "monospace",
-                                                fontSize: "16px",
-                                                fontWeight: "bold",
-                                            }}
-                                        >
+                                        <span className="bg-green-600 text-white rounded-md px-3 py-1 ml-2 font-mono text-lg font-bold">
                                             {result.campaign.roomCode}
                                         </span>
                                     </div>
-                                    <div style={{ marginBottom: "16px" }}>
+                                    <div className="mb-4">
                                         <strong>Your Role:</strong> Game Master 🎲
                                     </div>
-                                    <p
-                                        style={{
-                                            margin: "0",
-                                            fontSize: "14px",
-                                            fontStyle: "italic",
-                                            opacity: 0.8,
-                                        }}
-                                    >
+                                    <p className="text-sm italic opacity-80">
                                         Redirecting to seat management...
                                     </p>
                                 </div>

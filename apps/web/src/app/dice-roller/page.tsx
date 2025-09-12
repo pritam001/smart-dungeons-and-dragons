@@ -217,93 +217,33 @@ export default function DiceRollerPage() {
     };
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <main className="min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600 p-5 font-sans">
+            <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "3rem",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
+                <div className="flex justify-between items-center mb-12 bg-white bg-opacity-95 backdrop-blur-lg rounded-2xl p-8 shadow-lg">
                     <div>
-                        <h1
-                            style={{
-                                fontSize: "2.5rem",
-                                fontWeight: "700",
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                margin: "0 0 0.5rem 0",
-                            }}
-                        >
+                        <h1 className="text-4xl font-extrabold leading-tight mb-2">
                             🎲 Dice Roller
                         </h1>
-                        <p
-                            style={{
-                                color: "#64748b",
-                                margin: 0,
-                                fontSize: "1.1rem",
-                            }}
-                        >
+                        <p className="text-lg text-gray-700">
                             Roll dice for your adventures and campaigns
                         </p>
                     </div>
                     <button
                         onClick={() => router.back()}
-                        style={{
-                            padding: "0.75rem 1.5rem",
-                            background: "rgba(255, 255, 255, 0.2)",
-                            color: "#374151",
-                            border: "2px solid #e5e7eb",
-                            borderRadius: "12px",
-                            cursor: "pointer",
-                            fontWeight: "600",
-                            transition: "all 0.2s ease",
-                            fontSize: "0.95rem",
-                            backdropFilter: "blur(10px)",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
+                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200"
                     >
                         ← Back
                     </button>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Left Column - Rolling Interface */}
                     <div>
                         {/* Character Selection */}
                         {characters.length > 0 && (
-                            <div
-                                style={{
-                                    marginBottom: "24px",
-                                    padding: "16px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                }}
-                            >
-                                <h3 style={{ marginBottom: "12px", color: "#34495e" }}>
+                            <div className="mb-6 p-4 border border-gray-300 rounded-lg">
+                                <h3 className="text-xl font-semibold mb-3 text-gray-800">
                                     Select Character
                                 </h3>
                                 <select
@@ -314,13 +254,7 @@ export default function DiceRollerPage() {
                                         );
                                         setSelectedCharacter(character || null);
                                     }}
-                                    style={{
-                                        width: "100%",
-                                        padding: "8px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "4px",
-                                        fontSize: "16px",
-                                    }}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-lg"
                                 >
                                     <option value="">Select a character...</option>
                                     {characters.map((character) => (
@@ -334,21 +268,12 @@ export default function DiceRollerPage() {
                         )}
 
                         {/* Advantage/Disadvantage */}
-                        <div
-                            style={{
-                                marginBottom: "16px",
-                                padding: "16px",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                            }}
-                        >
-                            <h3 style={{ marginBottom: "12px", color: "#34495e" }}>
+                        <div className="mb-4 p-4 border border-gray-300 rounded-lg">
+                            <h3 className="text-xl font-semibold mb-3 text-gray-800">
                                 Roll Modifiers
                             </h3>
-                            <div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-                                <label
-                                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                                >
+                            <div className="flex gap-4 mb-3">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         checked={advantage}
@@ -356,12 +281,11 @@ export default function DiceRollerPage() {
                                             setAdvantage(e.target.checked);
                                             if (e.target.checked) setDisadvantage(false);
                                         }}
+                                        className="form-checkbox h-5 w-5 text-indigo-600"
                                     />
                                     ⬆️ Advantage
                                 </label>
-                                <label
-                                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                                >
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         checked={disadvantage}
@@ -369,19 +293,13 @@ export default function DiceRollerPage() {
                                             setDisadvantage(e.target.checked);
                                             if (e.target.checked) setAdvantage(false);
                                         }}
+                                        className="form-checkbox h-5 w-5 text-red-600"
                                     />
                                     ⬇️ Disadvantage
                                 </label>
                                 <button
                                     onClick={resetAdvantageDisadvantage}
-                                    style={{
-                                        padding: "4px 8px",
-                                        background: "#f8f9fa",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                        fontSize: "12px",
-                                    }}
+                                    className="px-3 py-1 bg-gray-200 border border-gray-300 rounded-md text-sm"
                                 >
                                     Reset
                                 </button>
@@ -390,101 +308,49 @@ export default function DiceRollerPage() {
 
                         {/* Character Rolls */}
                         {selectedCharacter && (
-                            <div
-                                style={{
-                                    marginBottom: "24px",
-                                    padding: "16px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                }}
-                            >
-                                <h3 style={{ marginBottom: "16px", color: "#34495e" }}>
+                            <div className="mb-6 p-4 border border-gray-300 rounded-lg">
+                                <h3 className="text-xl font-semibold mb-4 text-gray-800">
                                     Character Actions
                                 </h3>
 
                                 {/* Quick Actions */}
-                                <div
-                                    style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(2, 1fr)",
-                                        gap: "8px",
-                                        marginBottom: "16px",
-                                    }}
-                                >
+                                <div className="grid grid-cols-2 gap-2 mb-4">
                                     <button
                                         onClick={() => rollCharacterDice("initiative")}
                                         disabled={isRolling}
-                                        style={{
-                                            padding: "12px",
-                                            background: "#007bff",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "4px",
-                                            cursor: isRolling ? "not-allowed" : "pointer",
-                                            opacity: isRolling ? 0.6 : 1,
-                                        }}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-all duration-200"
                                     >
                                         ⚡ Initiative
                                     </button>
                                     <button
                                         onClick={() => rollCharacterDice("death-save")}
                                         disabled={isRolling}
-                                        style={{
-                                            padding: "12px",
-                                            background: "#dc3545",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "4px",
-                                            cursor: isRolling ? "not-allowed" : "pointer",
-                                            opacity: isRolling ? 0.6 : 1,
-                                        }}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 transition-all duration-200"
                                     >
                                         💀 Death Save
                                     </button>
                                     <button
                                         onClick={() => rollCharacterDice("hit-dice")}
                                         disabled={isRolling}
-                                        style={{
-                                            padding: "12px",
-                                            background: "#28a745",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "4px",
-                                            cursor: isRolling ? "not-allowed" : "pointer",
-                                            opacity: isRolling ? 0.6 : 1,
-                                        }}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-md shadow-md hover:bg-green-700 transition-all duration-200"
                                     >
                                         ❤️ Hit Dice
                                     </button>
                                     <button
                                         onClick={() => rollCharacterDice("attack")}
                                         disabled={isRolling}
-                                        style={{
-                                            padding: "12px",
-                                            background: "#fd7e14",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "4px",
-                                            cursor: isRolling ? "not-allowed" : "pointer",
-                                            opacity: isRolling ? 0.6 : 1,
-                                        }}
+                                        className="px-4 py-2 bg-orange-600 text-white rounded-md shadow-md hover:bg-orange-700 transition-all duration-200"
                                     >
                                         ⚔️ Attack
                                     </button>
                                 </div>
 
                                 {/* Ability Checks */}
-                                <div style={{ marginBottom: "16px" }}>
-                                    <h4 style={{ margin: "0 0 8px 0", color: "#495057" }}>
+                                <div className="mb-4">
+                                    <h4 className="text-lg font-semibold mb-2 text-gray-800">
                                         Ability Checks
                                     </h4>
-                                    <div
-                                        style={{
-                                            display: "grid",
-                                            gridTemplateColumns: "repeat(3, 1fr)",
-                                            gap: "4px",
-                                        }}
-                                    >
+                                    <div className="grid grid-cols-3 gap-2">
                                         {Object.keys(selectedCharacter.modifiers).map((ability) => (
                                             <button
                                                 key={ability}
@@ -492,15 +358,7 @@ export default function DiceRollerPage() {
                                                     rollCharacterDice("ability", ability)
                                                 }
                                                 disabled={isRolling}
-                                                style={{
-                                                    padding: "8px",
-                                                    background: "#f8f9fa",
-                                                    border: "1px solid #ddd",
-                                                    borderRadius: "4px",
-                                                    cursor: isRolling ? "not-allowed" : "pointer",
-                                                    fontSize: "12px",
-                                                    textTransform: "capitalize",
-                                                }}
+                                                className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all duration-150"
                                             >
                                                 {ability.slice(0, 3)}
                                             </button>
@@ -509,31 +367,17 @@ export default function DiceRollerPage() {
                                 </div>
 
                                 {/* Saving Throws */}
-                                <div style={{ marginBottom: "16px" }}>
-                                    <h4 style={{ margin: "0 0 8px 0", color: "#495057" }}>
+                                <div className="mb-4">
+                                    <h4 className="text-lg font-semibold mb-2 text-gray-800">
                                         Saving Throws
                                     </h4>
-                                    <div
-                                        style={{
-                                            display: "grid",
-                                            gridTemplateColumns: "repeat(3, 1fr)",
-                                            gap: "4px",
-                                        }}
-                                    >
+                                    <div className="grid grid-cols-3 gap-2">
                                         {Object.keys(selectedCharacter.savingThrows).map((save) => (
                                             <button
                                                 key={save}
                                                 onClick={() => rollCharacterDice("save", save)}
                                                 disabled={isRolling}
-                                                style={{
-                                                    padding: "8px",
-                                                    background: "#e9ecef",
-                                                    border: "1px solid #ddd",
-                                                    borderRadius: "4px",
-                                                    cursor: isRolling ? "not-allowed" : "pointer",
-                                                    fontSize: "12px",
-                                                    textTransform: "capitalize",
-                                                }}
+                                                className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all duration-150"
                                             >
                                                 {save.slice(0, 3)} Save
                                             </button>
@@ -544,30 +388,18 @@ export default function DiceRollerPage() {
                         )}
 
                         {/* Custom Dice Rolling */}
-                        <div
-                            style={{
-                                padding: "16px",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                            }}
-                        >
-                            <h3 style={{ marginBottom: "16px", color: "#34495e" }}>
+                        <div className="p-4 border border-gray-300 rounded-lg">
+                            <h3 className="text-xl font-semibold mb-4 text-gray-800">
                                 Custom Dice Roll
                             </h3>
 
                             {/* Dice Suggestions - Quick Select */}
                             {Object.keys(suggestions).length > 0 && (
-                                <div style={{ marginBottom: "16px" }}>
-                                    <h5
-                                        style={{
-                                            margin: "0 0 8px 0",
-                                            fontSize: "14px",
-                                            color: "#6c757d",
-                                        }}
-                                    >
+                                <div className="mb-4">
+                                    <h5 className="text-md font-medium mb-2 text-gray-600">
                                         Quick Select
                                     </h5>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                                    <div className="flex flex-wrap gap-2">
                                         {["1d20", "1d6", "1d8", "2d6", "3d6", "1d100"].map(
                                             (die) => (
                                                 <button
@@ -576,21 +408,11 @@ export default function DiceRollerPage() {
                                                         setCustomNotation(die);
                                                         setCustomInputValue("");
                                                     }}
-                                                    style={{
-                                                        padding: "4px 8px",
-                                                        background:
-                                                            customNotation === die
-                                                                ? "#007bff"
-                                                                : "#f8f9fa",
-                                                        color:
-                                                            customNotation === die
-                                                                ? "white"
-                                                                : "#333",
-                                                        border: "1px solid #ddd",
-                                                        borderRadius: "4px",
-                                                        cursor: "pointer",
-                                                        fontSize: "12px",
-                                                    }}
+                                                    className={`px-3 py-2 rounded-md text-sm font-medium border transition-all duration-150 ${
+                                                        customNotation === die
+                                                            ? "bg-blue-600 text-white"
+                                                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                    }`}
                                                 >
                                                     {getDiceIcon(die.match(/d\d+/)?.[0] || "")}{" "}
                                                     {die}
@@ -602,19 +424,11 @@ export default function DiceRollerPage() {
                                                 setCustomNotation("custom");
                                                 setCustomInputValue("");
                                             }}
-                                            style={{
-                                                padding: "4px 8px",
-                                                background:
-                                                    customNotation === "custom"
-                                                        ? "#007bff"
-                                                        : "#f8f9fa",
-                                                color:
-                                                    customNotation === "custom" ? "white" : "#333",
-                                                border: "1px solid #ddd",
-                                                borderRadius: "4px",
-                                                cursor: "pointer",
-                                                fontSize: "12px",
-                                            }}
+                                            className={`px-3 py-2 rounded-md text-sm font-medium border transition-all duration-150 ${
+                                                customNotation === "custom"
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                            }`}
                                         >
                                             ✏️ Custom
                                         </button>
@@ -623,28 +437,14 @@ export default function DiceRollerPage() {
                             )}
 
                             {/* Custom Input */}
-                            <div style={{ marginBottom: "16px" }}>
-                                <label
-                                    style={{
-                                        display: "block",
-                                        marginBottom: "4px",
-                                        fontSize: "14px",
-                                        fontWeight: "bold",
-                                    }}
-                                >
+                            <div className="mb-4">
+                                <label className="block mb-2 text-sm font-semibold text-gray-800">
                                     Dice Notation
                                 </label>
                                 <select
                                     value={customNotation}
                                     onChange={(e) => setCustomNotation(e.target.value)}
-                                    style={{
-                                        width: "100%",
-                                        padding: "8px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "4px",
-                                        fontSize: "16px",
-                                        backgroundColor: "white",
-                                    }}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-lg bg-white"
                                 >
                                     <optgroup label="Common Rolls">
                                         {suggestions["Common Rolls"]?.map((notation) => (
@@ -697,42 +497,21 @@ export default function DiceRollerPage() {
 
                                 {/* Custom Input Field */}
                                 {customNotation === "custom" && (
-                                    <div style={{ marginTop: "8px" }}>
+                                    <div className="mt-2">
                                         <input
                                             type="text"
                                             value={customInputValue}
                                             onChange={(e) => setCustomInputValue(e.target.value)}
                                             placeholder="Enter custom dice notation (e.g., 5d6+10, 1d20-2)"
-                                            style={{
-                                                width: "100%",
-                                                padding: "8px",
-                                                border: "1px solid #007bff",
-                                                borderRadius: "4px",
-                                                fontSize: "14px",
-                                            }}
+                                            className="w-full p-2 border border-blue-600 rounded-md text-sm"
                                             autoFocus
                                         />
-                                        <div
-                                            style={{
-                                                marginTop: "4px",
-                                                fontSize: "12px",
-                                                color: "#666",
-                                            }}
-                                        >
+                                        <div className="mt-1 text-xs text-gray-500">
                                             Examples: 1d20, 2d6+3, 4d8-1, 3d10+5
                                         </div>
                                     </div>
                                 )}
-                                <div
-                                    style={{
-                                        marginTop: "4px",
-                                        fontSize: "12px",
-                                        color: "#6c757d",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "8px",
-                                    }}
-                                >
+                                <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
                                     <span>
                                         Selected:{" "}
                                         {customNotation === "custom"
@@ -744,29 +523,15 @@ export default function DiceRollerPage() {
                                             setCustomNotation("1d20");
                                             setCustomInputValue("");
                                         }}
-                                        style={{
-                                            padding: "2px 6px",
-                                            fontSize: "10px",
-                                            background: "#f8f9fa",
-                                            border: "1px solid #ddd",
-                                            borderRadius: "3px",
-                                            cursor: "pointer",
-                                        }}
+                                        className="px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-all duration-150"
                                     >
                                         Reset to d20
                                     </button>
                                 </div>
                             </div>
 
-                            <div style={{ marginBottom: "16px" }}>
-                                <label
-                                    style={{
-                                        display: "block",
-                                        marginBottom: "4px",
-                                        fontSize: "14px",
-                                        fontWeight: "bold",
-                                    }}
-                                >
+                            <div className="mb-4">
+                                <label className="block mb-2 text-sm font-semibold text-gray-800">
                                     Description (optional)
                                 </label>
                                 <input
@@ -774,13 +539,7 @@ export default function DiceRollerPage() {
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="e.g., Fireball damage, Weapon attack"
-                                    style={{
-                                        width: "100%",
-                                        padding: "8px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "4px",
-                                        fontSize: "16px",
-                                    }}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-lg"
                                 />
                             </div>
 
@@ -791,31 +550,46 @@ export default function DiceRollerPage() {
                                     !customNotation ||
                                     (customNotation === "custom" && !customInputValue)
                                 }
-                                style={{
-                                    width: "100%",
-                                    padding: "12px",
-                                    background:
-                                        isRolling ||
-                                        !customNotation ||
-                                        (customNotation === "custom" && !customInputValue)
-                                            ? "#6c757d"
-                                            : "#28a745",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    cursor:
-                                        isRolling ||
-                                        !customNotation ||
-                                        (customNotation === "custom" && !customInputValue)
-                                            ? "not-allowed"
-                                            : "pointer",
-                                    fontSize: "16px",
-                                    fontWeight: "bold",
-                                }}
+                                className={`w-full px-4 py-2 rounded-md text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
+                                    isRolling ||
+                                    !customNotation ||
+                                    (customNotation === "custom" && !customInputValue)
+                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                        : "bg-green-600 text-white hover:bg-green-700"
+                                }`}
                             >
-                                {isRolling
-                                    ? "🎲 Rolling..."
-                                    : `🎲 Roll ${customNotation === "custom" ? customInputValue || "Custom" : customNotation}`}
+                                {isRolling ? (
+                                    <>
+                                        <svg
+                                            className="animate-spin h-5 w-5 mr-3"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            />
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v16a8 8 0 01-8-8z"
+                                            />
+                                        </svg>
+                                        Rolling...
+                                    </>
+                                ) : (
+                                    <>
+                                        🎲 Roll{" "}
+                                        {customNotation === "custom"
+                                            ? customInputValue || "Custom"
+                                            : customNotation}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -825,166 +599,96 @@ export default function DiceRollerPage() {
                         {/* Current Roll Result */}
                         {currentRollResult ? (
                             <div
-                                style={{
-                                    padding: "20px",
-                                    border: "2px solid #28a745",
-                                    borderRadius: "8px",
-                                    marginBottom: "16px",
-                                    background: currentRollResult.criticalSuccess
-                                        ? "#d4edda"
+                                className={`p-5 border-2 rounded-lg mb-4 text-center transition-all duration-200 ${
+                                    currentRollResult.criticalSuccess
+                                        ? "border-green-600 bg-green-50"
                                         : currentRollResult.criticalFailure
-                                          ? "#f8d7da"
-                                          : "#f8f9fa",
-                                    textAlign: "center",
-                                }}
+                                          ? "border-red-600 bg-red-50"
+                                          : "border-gray-300 bg-gray-50"
+                                }`}
                             >
                                 <div
-                                    style={{
-                                        fontSize: "24px",
-                                        fontWeight: "bold",
-                                        marginBottom: "8px",
-                                        color: currentRollResult.criticalSuccess
-                                            ? "#155724"
+                                    className={`text-3xl font-bold mb-2 transition-all duration-200 ${
+                                        currentRollResult.criticalSuccess
+                                            ? "text-green-700"
                                             : currentRollResult.criticalFailure
-                                              ? "#721c24"
-                                              : "#333",
-                                    }}
+                                              ? "text-red-700"
+                                              : "text-gray-800"
+                                    }`}
                                 >
                                     🎲 {currentRollResult.total}
                                     {currentRollResult.criticalSuccess && " ⭐"}
                                     {currentRollResult.criticalFailure && " ☠️"}
                                 </div>
-                                <div
-                                    style={{
-                                        fontSize: "16px",
-                                        marginBottom: "8px",
-                                        color: "#495057",
-                                    }}
-                                >
+                                <div className="text-lg mb-2 text-gray-700">
                                     {currentRollResult.notation}
                                     {"description" in currentRollResult &&
                                         currentRollResult.description &&
                                         ` - ${currentRollResult.description}`}
                                 </div>
                                 {currentRollResult.dice.length > 1 && (
-                                    <div style={{ fontSize: "14px", color: "#6c757d" }}>
+                                    <div className="text-sm text-gray-500">
                                         Individual rolls:{" "}
                                         {currentRollResult.dice.map((d) => d.value).join(", ")}
                                     </div>
                                 )}
                                 {currentRollResult.criticalSuccess && (
-                                    <div
-                                        style={{
-                                            fontSize: "14px",
-                                            fontWeight: "bold",
-                                            color: "#155724",
-                                            marginTop: "8px",
-                                        }}
-                                    >
+                                    <div className="text-sm font-bold text-green-700 mt-2">
                                         CRITICAL SUCCESS!
                                     </div>
                                 )}
                                 {currentRollResult.criticalFailure && (
-                                    <div
-                                        style={{
-                                            fontSize: "14px",
-                                            fontWeight: "bold",
-                                            color: "#721c24",
-                                            marginTop: "8px",
-                                        }}
-                                    >
+                                    <div className="text-sm font-bold text-red-700 mt-2">
                                         CRITICAL FAILURE!
                                     </div>
                                 )}
                                 <button
                                     onClick={() => setCurrentRollResult(null)}
-                                    style={{
-                                        marginTop: "12px",
-                                        padding: "6px 12px",
-                                        background: "#6c757d",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                        fontSize: "12px",
-                                    }}
+                                    className="mt-3 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-all duration-150"
                                 >
                                     Clear Result
                                 </button>
                             </div>
                         ) : (
-                            <div
-                                style={{
-                                    padding: "32px",
-                                    textAlign: "center",
-                                    border: "1px dashed #ddd",
-                                    borderRadius: "8px",
-                                    marginBottom: "16px",
-                                    color: "#6c757d",
-                                }}
-                            >
-                                <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎲</div>
+                            <div className="p-8 text-center border border-dashed border-gray-300 rounded-lg mb-4 text-gray-500">
+                                <div className="text-6xl mb-4">🎲</div>
                                 <div>Roll some dice to see results here!</div>
                             </div>
                         )}
 
                         {/* Roll History */}
                         {campaignId && rollHistory.length > 0 && (
-                            <div
-                                style={{
-                                    padding: "16px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                }}
-                            >
-                                <h3 style={{ marginBottom: "16px", color: "#34495e" }}>
+                            <div className="p-4 border border-gray-300 rounded-lg">
+                                <h3 className="text-xl font-semibold mb-4 text-gray-800">
                                     Recent Rolls
                                 </h3>
-                                <div style={{ maxHeight: "600px", overflowY: "auto" }}>
+                                <div className="max-h-[600px] overflow-y-auto">
                                     {rollHistory.map((roll, index) => {
                                         const formatted = formatRollResult(roll);
                                         return (
                                             <div
                                                 key={index}
-                                                style={{
-                                                    padding: "12px",
-                                                    margin: "8px 0",
-                                                    border: "1px solid #e9ecef",
-                                                    borderRadius: "6px",
-                                                    background: formatted.critical
+                                                className={`p-3 mb-2 rounded-lg transition-all duration-150 ${
+                                                    formatted.critical
                                                         ? formatted.criticalType === "success"
-                                                            ? "#d4edda"
-                                                            : "#f8d7da"
-                                                        : "#f8f9fa",
-                                                }}
+                                                            ? "bg-green-50 border-green-200"
+                                                            : "bg-red-50 border-red-200"
+                                                        : "bg-gray-50 border-gray-200"
+                                                }`}
                                             >
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        justifyContent: "space-between",
-                                                        alignItems: "flex-start",
-                                                        marginBottom: "4px",
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            fontSize: "12px",
-                                                            color: "#6c757d",
-                                                        }}
-                                                    >
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <div className="text-xs text-gray-500">
                                                         {formatted.time} • {formatted.character}
                                                     </div>
                                                     <div
-                                                        style={{
-                                                            fontSize: "18px",
-                                                            fontWeight: "bold",
-                                                            color: formatted.critical
+                                                        className={`text-lg font-bold transition-all duration-200 ${
+                                                            formatted.critical
                                                                 ? formatted.criticalType ===
                                                                   "success"
-                                                                    ? "#155724"
-                                                                    : "#721c24"
-                                                                : "#333",
-                                                        }}
+                                                                    ? "text-green-700"
+                                                                    : "text-red-700"
+                                                                : "text-gray-800"
+                                                        }`}
                                                     >
                                                         {formatted.total}
                                                         {formatted.critical &&
@@ -993,18 +697,12 @@ export default function DiceRollerPage() {
                                                                 : " ☠️")}
                                                     </div>
                                                 </div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "14px",
-                                                        fontWeight: "bold",
-                                                        marginBottom: "2px",
-                                                    }}
-                                                >
+                                                <div className="text-sm font-medium mb-1">
                                                     {formatted.type}
                                                     {formatted.description &&
                                                         ` - ${formatted.description}`}
                                                 </div>
-                                                <div style={{ fontSize: "12px", color: "#6c757d" }}>
+                                                <div className="text-xs text-gray-500">
                                                     {formatted.notation}
                                                     {formatted.dice.length > 1 && (
                                                         <span>
@@ -1025,16 +723,8 @@ export default function DiceRollerPage() {
                         )}
 
                         {(!campaignId || rollHistory.length === 0) && (
-                            <div
-                                style={{
-                                    padding: "16px",
-                                    textAlign: "center",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    color: "#6c757d",
-                                }}
-                            >
-                                <h3 style={{ marginBottom: "8px", color: "#34495e" }}>
+                            <div className="p-4 text-center border border-gray-300 rounded-lg text-gray-500">
+                                <h3 className="text-lg font-semibold mb-2 text-gray-800">
                                     Campaign Roll History
                                 </h3>
                                 <div>
