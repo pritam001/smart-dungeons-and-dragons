@@ -159,6 +159,96 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                     </Button>
                 </div>
 
+                {/* GM Section - Visible to All */}
+                {state.campaign && (
+                    <Card className="mb-8 border-2 border-purple-300 bg-purple-50">
+                        <h3 className="mt-0 mb-4 text-xl font-semibold text-purple-800 flex items-center gap-2">
+                            👑 Game Master
+                        </h3>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center text-2xl">
+                                    👑
+                                </div>
+                                <div>
+                                    <div className="text-lg font-semibold text-purple-900">
+                                        {state.campaign.createdBy || "Unknown GM"}
+                                    </div>
+                                    <div className="text-sm text-purple-700">
+                                        Campaign Creator & Game Master
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* GM Reassignment - Only visible to current GM */}
+                            {state.isGM &&
+                                state.campaign.seats.filter(
+                                    (s) => s.role === "player" && s.humanPlayerId,
+                                ).length > 0 && (
+                                    <div className="border-t border-purple-200 pt-4">
+                                        <div className="text-sm font-medium text-purple-800 mb-2">
+                                            Transfer GM Role:
+                                        </div>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {state.campaign.seats
+                                                .filter(
+                                                    (s) => s.role === "player" && s.humanPlayerId,
+                                                )
+                                                .map((seat) => (
+                                                    <button
+                                                        key={seat.seatId}
+                                                        onClick={async () => {
+                                                            if (
+                                                                confirm(
+                                                                    `Are you sure you want to transfer GM role to ${seat.humanPlayerId}? You will become a regular player.`,
+                                                                )
+                                                            ) {
+                                                                try {
+                                                                    const response = await fetch(
+                                                                        `http://localhost:13333/campaigns/${params.campaignId}/transfer-gm`,
+                                                                        {
+                                                                            method: "POST",
+                                                                            headers: {
+                                                                                "Content-Type":
+                                                                                    "application/json",
+                                                                                Authorization: `Bearer ${token}`,
+                                                                            },
+                                                                            body: JSON.stringify({
+                                                                                newGmId:
+                                                                                    seat.humanPlayerId,
+                                                                            }),
+                                                                        },
+                                                                    );
+
+                                                                    if (response.ok) {
+                                                                        alert(
+                                                                            "GM role transferred successfully!",
+                                                                        );
+                                                                        window.location.reload();
+                                                                    } else {
+                                                                        alert(
+                                                                            "Failed to transfer GM role",
+                                                                        );
+                                                                    }
+                                                                } catch (error) {
+                                                                    alert(
+                                                                        "Error transferring GM role",
+                                                                    );
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="px-3 py-2 bg-purple-200 hover:bg-purple-300 text-purple-800 rounded-lg text-sm font-medium transition-colors"
+                                                    >
+                                                        Transfer to {seat.humanPlayerId}
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
+                        </div>
+                    </Card>
+                )}
+
                 {/* Add Seats Section - GM Only */}
                 {state.isGM && (
                     <Card className="mb-8 border-2 border-yellow-300">
@@ -167,19 +257,29 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                         </h3>
                         <div className="flex gap-4 items-center flex-wrap">
                             <div className="text-base text-gray-500 font-medium">
-                                Current seats: {state.campaign.seats.length}/8
+                                Current player seats:{" "}
+                                {state.campaign.seats.filter((s) => s.role !== "gm").length}/8
                             </div>
                             <select
                                 id="additional-seat-count"
                                 className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base font-medium bg-white min-w-[200px]"
-                                disabled={state.campaign.seats.length >= 8}
+                                disabled={
+                                    state.campaign.seats.filter((s) => s.role !== "gm").length >= 8
+                                }
                             >
                                 <option value="">Select number to add...</option>
                                 {Array.from(
-                                    { length: Math.min(4, 8 - state.campaign.seats.length) },
+                                    {
+                                        length: Math.min(
+                                            4,
+                                            8 -
+                                                state.campaign.seats.filter((s) => s.role !== "gm")
+                                                    .length,
+                                        ),
+                                    },
                                     (_, i) => (
                                         <option key={i + 1} value={i + 1}>
-                                            Add {i + 1} seat{i + 1 > 1 ? "s" : ""}
+                                            Add {i + 1} player seat{i + 1 > 1 ? "s" : ""}
                                         </option>
                                     ),
                                 )}
@@ -242,36 +342,21 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                         alert("Error adding seats. Please try again.");
                                     }
                                 }}
-                                style={{
-                                    padding: "12px 24px",
-                                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    fontSize: "16px",
-                                    fontWeight: "600",
-                                    transition: "all 0.2s ease",
-                                }}
-                                disabled={state.campaign.seats.length >= 8}
-                                onMouseEnter={(e) => {
-                                    if (state.campaign && state.campaign.seats.length < 8) {
-                                        e.currentTarget.style.transform = "translateY(-1px)";
-                                        e.currentTarget.style.boxShadow =
-                                            "0 5px 15px rgba(245, 158, 11, 0.3)";
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                className={`px-6 py-3 bg-gradient-to-br from-amber-500 to-amber-600 text-white border-none rounded-lg cursor-pointer text-base font-semibold transition-all duration-200 ${
+                                    state.campaign.seats.filter((s) => s.role !== "gm").length < 8
+                                        ? "hover:-translate-y-px hover:shadow-lg hover:shadow-amber-500/30"
+                                        : "opacity-50 cursor-not-allowed"
+                                }`}
+                                disabled={
+                                    state.campaign.seats.filter((s) => s.role !== "gm").length >= 8
+                                }
                             >
                                 ➕ Add Seats
                             </button>
                         </div>
                         <p className="text-sm text-gray-500 mt-4 leading-relaxed">
-                            {state.campaign.seats.length >= 8
-                                ? "🚫 Maximum seat limit reached (8 seats including GM)."
+                            {state.campaign.seats.filter((s) => s.role !== "gm").length >= 8
+                                ? "🚫 Maximum seat limit reached (8 player seats)."
                                 : "💡 Add more empty seats that can be assigned to players later."}
                         </p>
                     </Card>
@@ -279,342 +364,179 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
 
                 {/* Seats Grid */}
                 <Card className="mb-8">
-                    <h3 className="mt-0 mb-6 text-xl font-semibold text-gray-700 flex items-center gap-2">
-                        🪑 Campaign Seats
+                    <h3 className="mt-0 mb-6 text-2xl font-bold text-white flex items-center gap-2">
+                        🪑 Player Seats
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {state.campaign.seats.map((seat) => {
-                            const isCurrentPlayerSeat =
-                                seat.humanPlayerId === state.currentUser?.id;
-                            const canManageSeat = state.isGM || isCurrentPlayerSeat;
-                            const isGMSeat = seat.role === "gm";
+                        {state.campaign.seats
+                            .filter((seat) => seat.role !== "gm") // Don't show GM seats - GM manages from outside
+                            .map((seat) => {
+                                const isCurrentPlayerSeat =
+                                    seat.humanPlayerId === state.currentUser?.id;
+                                const canManageSeat = state.isGM || isCurrentPlayerSeat;
 
-                            return (
-                                <div
-                                    key={seat.seatId}
-                                    style={{
-                                        border: isCurrentPlayerSeat
-                                            ? "3px solid #10b981"
-                                            : isGMSeat
-                                              ? "3px solid #f59e0b"
-                                              : "2px solid #e5e7eb",
-                                        borderRadius: "12px",
-                                        padding: "1.5rem",
-                                        backgroundColor: isCurrentPlayerSeat
-                                            ? "rgba(16, 185, 129, 0.05)"
-                                            : isGMSeat
-                                              ? "rgba(245, 158, 11, 0.05)"
-                                              : "#ffffff",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                >
-                                    {/* Seat Header */}
-                                    <div style={{ marginBottom: "1rem" }}>
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center",
-                                                marginBottom: "0.5rem",
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    fontSize: "1.2rem",
-                                                    fontWeight: "700",
-                                                    color: "#374151",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "0.5rem",
-                                                }}
-                                            >
-                                                {isGMSeat ? "🛡️" : "🎭"} Seat {seat.seatId}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    padding: "0.25rem 0.75rem",
-                                                    borderRadius: "20px",
-                                                    fontSize: "0.8rem",
-                                                    fontWeight: "600",
-                                                    textTransform: "uppercase",
-                                                    backgroundColor: isGMSeat
-                                                        ? "rgba(245, 158, 11, 0.2)"
-                                                        : "rgba(102, 126, 234, 0.2)",
-                                                    color: isGMSeat ? "#d97706" : "#667eea",
-                                                }}
-                                            >
-                                                {seat.role}
-                                            </div>
-                                        </div>
-
-                                        {/* Player Info */}
-                                        <div style={{ marginBottom: "0.75rem" }}>
-                                            <div
-                                                style={{
-                                                    fontSize: "0.9rem",
-                                                    color: "#6b7280",
-                                                    marginBottom: "0.25rem",
-                                                }}
-                                            >
-                                                Player:
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: "1rem",
-                                                    fontWeight: "600",
-                                                    color: "#374151",
-                                                }}
-                                            >
-                                                {seat.humanPlayerId ? (
-                                                    <>
-                                                        👤 {seat.humanPlayerId}
-                                                        {isCurrentPlayerSeat && (
-                                                            <span
-                                                                style={{
-                                                                    color: "#10b981",
-                                                                    fontSize: "0.8rem",
-                                                                    marginLeft: "0.5rem",
-                                                                }}
-                                                            >
-                                                                (You)
-                                                            </span>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <span style={{ color: "#9ca3af" }}>
-                                                        Empty Seat
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Character Info */}
-                                        <div style={{ marginBottom: "0.75rem" }}>
-                                            <div
-                                                style={{
-                                                    fontSize: "0.9rem",
-                                                    color: "#6b7280",
-                                                    marginBottom: "0.25rem",
-                                                }}
-                                            >
-                                                Character:
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: "1rem",
-                                                    fontWeight: "600",
-                                                    color: seat.characterId ? "#374151" : "#9ca3af",
-                                                }}
-                                            >
-                                                {seat.characterId ? "✅ Created" : "❌ Not Created"}
-                                            </div>
-                                        </div>
-
-                                        {/* AI Status */}
-                                        <div style={{ marginBottom: "1rem" }}>
-                                            <div
-                                                style={{
-                                                    fontSize: "0.9rem",
-                                                    color: "#6b7280",
-                                                    marginBottom: "0.25rem",
-                                                }}
-                                            >
-                                                AI Status:
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: "1rem",
-                                                    fontWeight: "600",
-                                                    color: seat.ai?.enabled ? "#10b981" : "#9ca3af",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "0.5rem",
-                                                }}
-                                            >
-                                                {seat.ai?.enabled ? (
-                                                    <>🤖 {seat.ai.modelId || "Enabled"}</>
-                                                ) : (
-                                                    "🚫 Disabled"
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
+                                return (
                                     <div
-                                        style={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: "0.75rem",
-                                        }}
+                                        key={seat.seatId}
+                                        className={`rounded-xl p-6 transition-all duration-200 ${
+                                            isCurrentPlayerSeat
+                                                ? "border-2 border-blue-400 bg-blue-100"
+                                                : "border-2 border-gray-200 bg-green-50"
+                                        }`}
                                     >
-                                        {/* AI Toggle - Only GM can use */}
-                                        {state.isGM && (
-                                            <button
-                                                onClick={() => toggleAI(seat.seatId)}
-                                                style={{
-                                                    padding: "0.75rem 1rem",
-                                                    background: seat.ai?.enabled
-                                                        ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
-                                                        : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                                    color: "white",
-                                                    border: "none",
-                                                    borderRadius: "8px",
-                                                    fontSize: "0.9rem",
-                                                    fontWeight: "600",
-                                                    cursor: "pointer",
-                                                    transition: "all 0.2s ease",
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.transform =
-                                                        "translateY(-1px)";
-                                                    e.currentTarget.style.boxShadow = seat.ai
-                                                        ?.enabled
-                                                        ? "0 5px 15px rgba(239, 68, 68, 0.3)"
-                                                        : "0 5px 15px rgba(16, 185, 129, 0.3)";
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.transform =
-                                                        "translateY(0)";
-                                                    e.currentTarget.style.boxShadow = "none";
-                                                }}
-                                            >
-                                                {seat.ai?.enabled
-                                                    ? "🤖 Disable AI"
-                                                    : "🤖 Enable AI"}
-                                            </button>
-                                        )}
+                                        {/* Seat Header */}
+                                        <div className="mb-4">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className="text-xl font-bold text-gray-700 flex items-center gap-2">
+                                                    🎭 Seat {seat.seatId}
+                                                    {isCurrentPlayerSeat && (
+                                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                                                            YOUR SEAT
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-indigo-100 text-indigo-600">
+                                                    {seat.role}
+                                                </div>
+                                            </div>
 
-                                        {/* Create Character */}
-                                        {!seat.characterId &&
-                                            seat.role === "player" &&
-                                            (canManageSeat ||
-                                                (state.isGM && !seat.humanPlayerId)) && (
-                                                <button
-                                                    onClick={() =>
-                                                        (window.location.href = `/create-character?campaignId=${state.campaign?.id}&seatId=${seat.seatId}`)
-                                                    }
-                                                    style={{
-                                                        padding: "0.75rem 1rem",
-                                                        background:
-                                                            "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                                        color: "white",
-                                                        border: "none",
-                                                        borderRadius: "8px",
-                                                        fontSize: "0.9rem",
-                                                        fontWeight: "600",
-                                                        cursor: "pointer",
-                                                        transition: "all 0.2s ease",
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(-1px)";
-                                                        e.currentTarget.style.boxShadow =
-                                                            "0 5px 15px rgba(16, 185, 129, 0.3)";
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(0)";
-                                                        e.currentTarget.style.boxShadow = "none";
-                                                    }}
+                                            {/* Player Info */}
+                                            <div className="mb-3">
+                                                <div className="text-sm text-gray-500 mb-1">
+                                                    Player:
+                                                </div>
+                                                <div className="text-base font-semibold text-gray-700">
+                                                    {seat.humanPlayerId ? (
+                                                        <>
+                                                            👤 {seat.humanPlayerId}
+                                                            {isCurrentPlayerSeat && (
+                                                                <span className="text-green-600 text-xs ml-2">
+                                                                    (You)
+                                                                </span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-gray-400">
+                                                            Empty Seat
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Character Info */}
+                                            <div className="mb-3">
+                                                <div className="text-sm text-gray-500 mb-1">
+                                                    Character:
+                                                </div>
+                                                <div
+                                                    className={`text-base font-semibold ${seat.characterId ? "text-gray-700" : "text-gray-400"}`}
                                                 >
-                                                    ✨{" "}
-                                                    {seat.humanPlayerId
-                                                        ? "Create Character"
-                                                        : "Create Character (Empty Seat)"}
+                                                    {seat.characterId
+                                                        ? "✅ Created"
+                                                        : "❌ Not Created"}
+                                                </div>
+                                            </div>
+
+                                            {/* AI Status */}
+                                            <div className="mb-4">
+                                                <div className="text-sm text-gray-500 mb-1">
+                                                    AI Status:
+                                                </div>
+                                                <div
+                                                    className={`text-base font-semibold flex items-center gap-2 ${seat.ai?.enabled ? "text-green-600" : "text-gray-400"}`}
+                                                >
+                                                    {seat.ai?.enabled ? (
+                                                        <>🤖 {seat.ai.modelId || "Enabled"}</>
+                                                    ) : (
+                                                        "🚫 Disabled"
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex flex-col gap-3">
+                                            {/* AI Toggle - Only GM can use */}
+                                            {state.isGM && (
+                                                <button
+                                                    onClick={() => toggleAI(seat.seatId)}
+                                                    className={`px-4 py-3 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-px ${
+                                                        seat.ai?.enabled
+                                                            ? "bg-gradient-to-br from-red-500 to-red-600 hover:shadow-lg hover:shadow-red-500/30"
+                                                            : "bg-gradient-to-br from-green-500 to-green-600 hover:shadow-lg hover:shadow-green-500/30"
+                                                    }`}
+                                                >
+                                                    {seat.ai?.enabled
+                                                        ? "🤖 Disable AI"
+                                                        : "🤖 Enable AI"}
                                                 </button>
                                             )}
 
-                                        {/* View Character */}
-                                        {seat.characterId && (
-                                            <button
-                                                onClick={() =>
-                                                    (window.location.href = `/character/${seat.characterId}?returnTo=seat&campaignId=${state.campaign?.id}`)
-                                                }
-                                                style={{
-                                                    padding: "0.75rem 1rem",
-                                                    background:
-                                                        "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                                                    color: "white",
-                                                    border: "none",
-                                                    borderRadius: "8px",
-                                                    fontSize: "0.9rem",
-                                                    fontWeight: "600",
-                                                    cursor: "pointer",
-                                                    transition: "all 0.2s ease",
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.transform =
-                                                        "translateY(-1px)";
-                                                    e.currentTarget.style.boxShadow =
-                                                        "0 5px 15px rgba(59, 130, 246, 0.3)";
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.transform =
-                                                        "translateY(0)";
-                                                    e.currentTarget.style.boxShadow = "none";
-                                                }}
-                                            >
-                                                👁️ View Character
-                                            </button>
-                                        )}
+                                            {/* Create Character */}
+                                            {!seat.characterId &&
+                                                seat.role === "player" &&
+                                                (canManageSeat ||
+                                                    (state.isGM && !seat.humanPlayerId)) && (
+                                                    <button
+                                                        onClick={() =>
+                                                            (window.location.href = `/create-character?campaignId=${state.campaign?.id}&seatId=${seat.seatId}`)
+                                                        }
+                                                        className="px-4 py-3 bg-gradient-to-br from-green-500 to-green-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-green-500/30"
+                                                    >
+                                                        ✨{" "}
+                                                        {seat.humanPlayerId
+                                                            ? "Create Character"
+                                                            : "Create Character (Empty Seat)"}
+                                                    </button>
+                                                )}
 
-                                        {/* Remove Player - Only GM can remove players (not themselves) */}
-                                        {state.isGM &&
-                                            seat.humanPlayerId &&
-                                            seat.role === "player" &&
-                                            seat.humanPlayerId !== state.currentUser?.id && (
+                                            {/* View Character */}
+                                            {seat.characterId && (
                                                 <button
                                                     onClick={() =>
-                                                        removePlayer(seat.humanPlayerId!)
+                                                        (window.location.href = `/character/${seat.characterId}?returnTo=seat&campaignId=${state.campaign?.id}`)
                                                     }
-                                                    style={{
-                                                        padding: "0.75rem 1rem",
-                                                        background:
-                                                            "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                                                        color: "white",
-                                                        border: "none",
-                                                        borderRadius: "8px",
-                                                        fontSize: "0.9rem",
-                                                        fontWeight: "600",
-                                                        cursor: "pointer",
-                                                        transition: "all 0.2s ease",
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(-1px)";
-                                                        e.currentTarget.style.boxShadow =
-                                                            "0 5px 15px rgba(239, 68, 68, 0.3)";
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(0)";
-                                                        e.currentTarget.style.boxShadow = "none";
-                                                    }}
+                                                    className="px-4 py-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-blue-500/30"
                                                 >
-                                                    🗑️ Remove Player
+                                                    👁️ View Character
                                                 </button>
                                             )}
+
+                                            {/* Remove Player - Only GM can remove players (not themselves) */}
+                                            {state.isGM &&
+                                                seat.humanPlayerId &&
+                                                seat.role === "player" &&
+                                                seat.humanPlayerId !== state.currentUser?.id && (
+                                                    <button
+                                                        onClick={() =>
+                                                            removePlayer(seat.humanPlayerId!)
+                                                        }
+                                                        className="px-4 py-3 bg-gradient-to-br from-red-500 to-red-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-red-500/30"
+                                                    >
+                                                        🗑️ Remove Player
+                                                    </button>
+                                                )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
                 </Card>
 
                 {/* All Characters Section */}
                 <Card>
-                    <h3 className="mt-0 mb-4 text-xl font-semibold text-gray-700 flex items-center gap-2">
-                        🎭 All Campaign Characters
+                    <h3 className="mt-0 mb-4 text-2xl font-bold text-white flex items-center gap-2">
+                        🎭 Player Characters
                     </h3>
-                    <p className="text-gray-500 text-base mb-6 leading-relaxed">
+                    <p className="text-gray-100 text-base mb-6 leading-relaxed font-medium">
                         {state.isGM
                             ? "🛡️ As GM, you can view and edit all characters."
                             : "👁️ You can view all characters but can only edit your own."}
                     </p>
 
-                    {state.campaign.seats.filter((seat) => seat.characterId).length === 0 ? (
+                    {state.campaign.seats.filter((seat) => seat.characterId && seat.role !== "gm")
+                        .length === 0 ? (
                         <div className="text-center p-12 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                             <div className="text-5xl mb-4">🎭</div>
                             <h4 className="m-0 mb-2 text-gray-500">No Characters Created Yet</h4>
@@ -623,62 +545,36 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                             </p>
                         </div>
                     ) : (
-                        <div
-                            style={{
-                                display: "grid",
-                                gap: "1.5rem",
-                                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                            }}
-                        >
+                        <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
                             {state.campaign.seats
-                                .filter((seat) => seat.characterId)
+                                .filter((seat) => seat.characterId && seat.role !== "gm")
                                 .map((seat) => (
                                     <div
                                         key={seat.characterId}
-                                        style={{
-                                            border:
-                                                seat.humanPlayerId === state.currentUser?.id
-                                                    ? "3px solid #10b981"
-                                                    : "2px solid #e5e7eb",
-                                            borderRadius: "12px",
-                                            padding: "1.5rem",
-                                            backgroundColor:
-                                                seat.humanPlayerId === state.currentUser?.id
-                                                    ? "rgba(16, 185, 129, 0.05)"
-                                                    : "#ffffff",
-                                            transition: "all 0.2s ease",
-                                        }}
+                                        className={`rounded-xl p-6 transition-all duration-200 ${
+                                            seat.humanPlayerId === state.currentUser?.id
+                                                ? "border-2 border-blue-400 bg-blue-100"
+                                                : "border-2 border-gray-200 bg-white"
+                                        }`}
                                     >
-                                        <div
-                                            style={{
-                                                fontWeight: "700",
-                                                fontSize: "1.1rem",
-                                                marginBottom: "0.75rem",
-                                                color: "#374151",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "0.5rem",
-                                            }}
-                                        >
+                                        <div className="font-bold text-lg mb-3 text-gray-700 flex items-center gap-2">
                                             🎭 Seat {seat.seatId} Character
+                                            {seat.humanPlayerId === state.currentUser?.id && (
+                                                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                                                    YOUR CHARACTER
+                                                </span>
+                                            )}
                                         </div>
 
-                                        <div
-                                            style={{
-                                                fontSize: "14px",
-                                                color: "#6b7280",
-                                                marginBottom: "1rem",
-                                                lineHeight: "1.5",
-                                            }}
-                                        >
-                                            <div style={{ marginBottom: "0.25rem" }}>
+                                        <div className="text-sm text-gray-500 mb-4 leading-relaxed">
+                                            <div className="mb-1">
                                                 <strong>Player:</strong>{" "}
                                                 {seat.humanPlayerId ? (
                                                     <>
                                                         👤 {seat.humanPlayerId}
                                                         {seat.humanPlayerId ===
                                                             state.currentUser?.id && (
-                                                            <span style={{ color: "#10b981" }}>
+                                                            <span className="text-green-600">
                                                                 {" "}
                                                                 (Your character)
                                                             </span>
@@ -690,13 +586,7 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                             </div>
                                             <div>
                                                 <strong>Role:</strong>{" "}
-                                                <span
-                                                    style={{
-                                                        textTransform: "capitalize",
-                                                        color: "#374151",
-                                                        fontWeight: "500",
-                                                    }}
-                                                >
+                                                <span className="capitalize text-gray-700 font-medium">
                                                     {seat.role}
                                                 </span>
                                             </div>
@@ -706,29 +596,7 @@ export default function SeatManagement({ params }: { params: { campaignId: strin
                                             onClick={() =>
                                                 (window.location.href = `/character/${seat.characterId}?returnTo=seat&campaignId=${state.campaign?.id}`)
                                             }
-                                            style={{
-                                                background:
-                                                    "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                                                color: "white",
-                                                border: "none",
-                                                padding: "0.75rem 1rem",
-                                                borderRadius: "8px",
-                                                fontSize: "14px",
-                                                fontWeight: "600",
-                                                cursor: "pointer",
-                                                width: "100%",
-                                                transition: "all 0.2s ease",
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.transform =
-                                                    "translateY(-1px)";
-                                                e.currentTarget.style.boxShadow =
-                                                    "0 5px 15px rgba(59, 130, 246, 0.3)";
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.transform = "translateY(0)";
-                                                e.currentTarget.style.boxShadow = "none";
-                                            }}
+                                            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none p-3 rounded-lg text-sm font-semibold cursor-pointer w-full transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-blue-500/30"
                                         >
                                             👁️ View Character Details
                                         </button>
