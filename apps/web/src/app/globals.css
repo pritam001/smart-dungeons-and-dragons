@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ensure common classes are included */
+@layer utilities {
+  .text-white\/70 {
+    color: rgb(255 255 255 / 0.7);
+  }
+  .text-white\/80 {
+    color: rgb(255 255 255 / 0.8);
+  }
+  .text-white\/90 {
+    color: rgb(255 255 255 / 0.9);
+  }
+  .border-white\/20 {
+    border-color: rgb(255 255 255 / 0.2);
+  }
+  .border-white\/30 {
+    border-color: rgb(255 255 255 / 0.3);
+  }
+  .bg-white\/10 {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+}
