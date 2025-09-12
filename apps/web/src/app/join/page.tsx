@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CampaignConfig } from "@dnd-ai/types";
+import { PageContainer, ContentWrapper, Button, Card, Input } from "../../components/ui";
 
 export default function JoinCampaignPage() {
     const [roomCode, setRoomCode] = useState("");
@@ -37,7 +38,7 @@ export default function JoinCampaignPage() {
             })
             .then((userData) => {
                 setIsAuthenticated(true);
-                setUserProfile(userData.user); // Extract the user object from the response
+                setUserProfile(userData.user);
                 loadCampaigns();
             })
             .catch(() => {
@@ -48,13 +49,17 @@ export default function JoinCampaignPage() {
     }, [router]);
 
     async function loadCampaigns() {
+        const token = localStorage.getItem("authToken");
         try {
-            // List campaigns API doesn't require authentication currently
-            const res = await fetch("http://localhost:13333/campaigns");
-            const data = await res.json();
-            // Only show public campaigns in the browser
-            const publicCampaigns = data.filter((c: CampaignConfig) => !c.isPrivate);
-            setCampaigns(publicCampaigns);
+            const response = await fetch("http://localhost:13333/campaigns", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                // Only show public campaigns
+                const publicCampaigns = data.filter((c: CampaignConfig) => !c.isPrivate);
+                setCampaigns(publicCampaigns);
+            }
         } catch (error) {
             console.error("Failed to load campaigns:", error);
         } finally {
@@ -62,40 +67,43 @@ export default function JoinCampaignPage() {
         }
     }
 
-    async function joinCampaign(campaignRoomCode: string) {
-        setJoining(true);
-        setResult(null);
+    async function joinCampaign(code: string) {
+        if (!code.trim()) return;
 
+        setJoining(true);
         const token = localStorage.getItem("authToken");
 
         try {
-            const res = await fetch("http://localhost:13333/campaigns/join", {
+            const response = await fetch("http://localhost:13333/campaigns/join", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    roomCode: campaignRoomCode,
+                    roomCode: code,
                     playerDisplayName: userProfile?.displayName || "Player",
                 }),
             });
 
-            if (!res.ok) {
-                const error = await res.json();
-                setResult({ error: error.error || "Failed to join campaign" });
-                return;
-            }
+            const data = await response.json();
 
-            const data = await res.json();
-            setResult(data);
+            if (response.ok) {
+                setResult({
+                    success: true,
+                    message: `Successfully joined campaign: ${data.campaign.name}`,
+                    campaign: data.campaign,
+                });
+                setRoomCode("");
 
-            // On successful join, redirect to the campaign seat page
-            if (data.campaign?.id) {
-                // Show success message briefly before redirect
+                // Redirect to campaign seat page
                 setTimeout(() => {
                     router.push(`/seat/${data.campaign.id}`);
                 }, 1000);
+            } else {
+                setResult({
+                    error: data.error || "Failed to join campaign",
+                });
             }
         } catch (error) {
             setResult({ error: "Network error occurred" });
@@ -111,320 +119,195 @@ export default function JoinCampaignPage() {
 
     if (!isAuthenticated) {
         return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "18px",
-                }}
-            >
+            <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-lg">
                 Checking authentication...
             </div>
         );
     }
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                padding: "2rem",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            }}
-        >
-            <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <PageContainer>
+            <ContentWrapper>
                 {/* Header */}
-                <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-                    <button
+                <div className="text-center mb-12">
+                    <Button
                         onClick={() => router.push("/dashboard")}
-                        style={{
-                            position: "absolute",
-                            top: "20px",
-                            left: "20px",
-                            backgroundColor: "rgba(255, 255, 255, 0.2)",
-                            color: "white",
-                            border: "none",
-                            padding: "12px 20px",
-                            borderRadius: "25px",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            backdropFilter: "blur(10px)",
-                            transition: "all 0.3s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                            e.currentTarget.style.transform = "translateY(0)";
-                        }}
+                        variant="secondary"
+                        className="absolute top-5 left-5 z-10"
                     >
                         ← Back to Dashboard
-                    </button>
-
-                    <h1
-                        style={{
-                            color: "white",
-                            fontSize: "42px",
-                            fontWeight: "700",
-                            margin: "0 0 12px 0",
-                            textShadow: "0 4px 8px rgba(0,0,0,0.3)",
-                        }}
-                    >
-                        🗡️ Join Campaign
+                    </Button>
+                    <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                        ⚔️ Join Campaign
                     </h1>
-                    <p
-                        style={{
-                            color: "rgba(255, 255, 255, 0.9)",
-                            fontSize: "18px",
-                            margin: "0",
-                            fontWeight: "300",
-                        }}
-                    >
-                        Join an existing adventure with friends
+                    <p className="text-white/90 text-xl">
+                        Join an existing campaign or browse available adventures
                     </p>
                 </div>
 
-                {/* Public Campaigns Section */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "20px",
-                        padding: "2rem",
-                        marginBottom: "2rem",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                        backdropFilter: "blur(10px)",
-                    }}
-                >
-                    <h2
-                        style={{
-                            fontSize: "24px",
-                            fontWeight: "600",
-                            margin: "0 0 1rem 0",
-                            color: "#333",
-                        }}
-                    >
-                        🌟 Public Campaigns
-                    </h2>
-                    <p
-                        style={{
-                            color: "#666",
-                            marginBottom: "1.5rem",
-                            fontSize: "16px",
-                            lineHeight: "1.5",
-                        }}
-                    >
-                        Click the "Join" button on any available public campaign to instantly join,
-                        or use the private campaign section below to enter a room code.
-                    </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                    {/* Private Campaign Form */}
+                    <Card>
+                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 drop-shadow">
+                            🔐 Join Private Campaign
+                        </h2>
+                        <form onSubmit={submitPrivateCampaign} className="mb-4">
+                            <div className="mb-4">
+                                <label className="block text-sm font-semibold text-white/90 mb-2">
+                                    Campaign Code
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={roomCode}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setRoomCode(e.target.value.toUpperCase())
+                                    }
+                                    placeholder="Enter 6-digit campaign code"
+                                    maxLength={6}
+                                    disabled={joining}
+                                    className="font-mono text-center tracking-widest uppercase"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-white/90 mb-2">
+                                    Joining as
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={userProfile?.displayName || "Loading..."}
+                                    readOnly
+                                    disabled
+                                    className="bg-gray-100 cursor-not-allowed"
+                                />
+                            </div>
+                            <Button
+                                type="submit"
+                                disabled={joining || !roomCode.trim()}
+                                className="w-full"
+                            >
+                                {joining ? "🎲 Joining..." : "🚀 Join Campaign"}
+                            </Button>
+                        </form>
 
-                    {loading ? (
-                        <div style={{ textAlign: "center", padding: "2rem", color: "#666" }}>
-                            <div style={{ fontSize: "24px", marginBottom: "1rem" }}>⏳</div>
-                            Loading campaigns...
-                        </div>
-                    ) : campaigns.length === 0 ? (
-                        <div
-                            style={{
-                                textAlign: "center",
-                                padding: "3rem",
-                                color: "#666",
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: "12px",
-                                border: "2px dashed #dee2e6",
-                            }}
-                        >
-                            <div style={{ fontSize: "48px", marginBottom: "1rem" }}>🏰</div>
-                            <h3 style={{ margin: "0 0 0.5rem 0", color: "#495057" }}>
-                                No Public Campaigns
-                            </h3>
-                            <p style={{ margin: 0 }}>
-                                No public campaigns found. Ask someone to create a campaign or enter
-                                a room code below!
-                            </p>
-                        </div>
-                    ) : (
-                        <div style={{ display: "grid", gap: "1rem" }}>
-                            {campaigns.map((campaign) => {
-                                const occupiedSeats = campaign.seats.filter(
-                                    (s) => s.humanPlayerId,
-                                ).length;
-                                const totalSeats = campaign.seats.length;
-                                const isFull = occupiedSeats >= totalSeats;
+                        {result && (
+                            <div
+                                className={`mt-4 p-4 rounded-lg text-center ${
+                                    result.success
+                                        ? "bg-green-100 text-green-800 border border-green-200"
+                                        : "bg-red-100 text-red-800 border border-red-200"
+                                }`}
+                            >
+                                {result.success ? (
+                                    <div>
+                                        <div className="font-semibold mb-2 flex items-center justify-center gap-2">
+                                            ✅ {result.message}
+                                        </div>
+                                        <div className="text-sm text-green-600">
+                                            Redirecting to campaign...
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-2">
+                                        ❌ <strong>Error:</strong> {result.error}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </Card>
 
-                                return (
-                                    <div
-                                        key={campaign.id}
-                                        style={{
-                                            border: isFull
-                                                ? "2px solid #e74c3c"
-                                                : "2px solid #e9ecef",
-                                            borderRadius: "12px",
-                                            padding: "1.5rem",
-                                            backgroundColor: isFull
-                                                ? "rgba(231, 76, 60, 0.05)"
-                                                : "#ffffff",
-                                            transition: "all 0.3s ease",
-                                            opacity: isFull ? 0.6 : 1,
-                                        }}
-                                    >
+                    {/* Public Campaigns */}
+                    <Card>
+                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 drop-shadow">
+                            🌍 Public Campaigns
+                        </h2>
+                        {loading ? (
+                            <div className="text-center py-8 text-white/70">
+                                <div className="text-2xl mb-2">⏳</div>
+                                Loading campaigns...
+                            </div>
+                        ) : campaigns.length === 0 ? (
+                            <div className="text-center py-8 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+                                <div className="text-5xl mb-4">🏰</div>
+                                <h3 className="font-semibold text-white/80 mb-2">
+                                    No Public Campaigns
+                                </h3>
+                                <p className="text-white/70 text-sm">
+                                    No public campaigns found. Ask someone to create a campaign or
+                                    enter a room code!
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
+                                {campaigns.map((campaign) => {
+                                    const occupiedSeats = campaign.seats.filter(
+                                        (s) => s.humanPlayerId,
+                                    ).length;
+                                    const totalSeats = campaign.seats.length;
+                                    const isFull = occupiedSeats >= totalSeats;
+
+                                    return (
                                         <div
-                                            style={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "flex-start",
-                                                marginBottom: "1rem",
-                                            }}
+                                            key={campaign.id}
+                                            className={`border-2 rounded-lg p-4 transition-all ${
+                                                isFull
+                                                    ? "border-red-300 bg-red-50 opacity-60"
+                                                    : "border-white/20 hover:bg-white/10 hover:border-white/30"
+                                            }`}
                                         >
-                                            <div style={{ flex: 1 }}>
-                                                <div
-                                                    style={{
-                                                        fontWeight: "700",
-                                                        fontSize: "20px",
-                                                        marginBottom: "0.5rem",
-                                                        color: "#333",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "0.5rem",
-                                                    }}
-                                                >
-                                                    🏛️ {campaign.name}
-                                                    {isFull && (
-                                                        <span
-                                                            style={{
-                                                                fontSize: "14px",
-                                                                color: "#e74c3c",
-                                                            }}
-                                                        >
-                                                            • FULL
-                                                        </span>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex-1">
+                                                    <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                                                        🏛️ {campaign.name}
+                                                        {isFull && (
+                                                            <span className="text-sm text-red-400">
+                                                                • FULL
+                                                            </span>
+                                                        )}
+                                                    </h3>
+                                                    {campaign.description && (
+                                                        <p className="text-white/70 text-sm italic mt-1">
+                                                            {campaign.description}
+                                                        </p>
                                                     )}
                                                 </div>
-
-                                                {campaign.description && (
-                                                    <p
-                                                        style={{
-                                                            color: "#666",
-                                                            margin: "0 0 1rem 0",
-                                                            fontSize: "14px",
-                                                            fontStyle: "italic",
-                                                        }}
-                                                    >
-                                                        {campaign.description}
-                                                    </p>
-                                                )}
+                                                <Button
+                                                    onClick={() => joinCampaign(campaign.roomCode)}
+                                                    disabled={joining || isFull}
+                                                    variant={isFull ? "secondary" : "success"}
+                                                    className="ml-4"
+                                                >
+                                                    {joining
+                                                        ? "Joining..."
+                                                        : isFull
+                                                          ? "Full"
+                                                          : "🚀 Join"}
+                                                </Button>
                                             </div>
 
-                                            <button
-                                                onClick={() => joinCampaign(campaign.roomCode)}
-                                                disabled={joining || isFull}
-                                                style={{
-                                                    padding: "12px 24px",
-                                                    background:
-                                                        joining || isFull
-                                                            ? "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)"
-                                                            : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                                    color: "white",
-                                                    border: "none",
-                                                    borderRadius: "8px",
-                                                    fontSize: "14px",
-                                                    fontWeight: "600",
-                                                    cursor:
-                                                        joining || isFull
-                                                            ? "not-allowed"
-                                                            : "pointer",
-                                                    transition: "all 0.2s ease",
-                                                    opacity: joining || isFull ? 0.6 : 1,
-                                                    minWidth: "100px",
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    if (!joining && !isFull) {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(-1px)";
-                                                        e.currentTarget.style.boxShadow =
-                                                            "0 5px 15px rgba(16, 185, 129, 0.3)";
-                                                    }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    if (!joining && !isFull) {
-                                                        e.currentTarget.style.transform =
-                                                            "translateY(0)";
-                                                        e.currentTarget.style.boxShadow = "none";
-                                                    }
-                                                }}
-                                            >
-                                                {joining
-                                                    ? "Joining..."
-                                                    : isFull
-                                                      ? "Full"
-                                                      : "🚀 Join"}
-                                            </button>
-                                        </div>
-
-                                        <div
-                                            style={{
-                                                display: "grid",
-                                                gridTemplateColumns: "1fr 1fr",
-                                                gap: "1rem",
-                                            }}
-                                        >
-                                            <div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "14px",
-                                                        color: "#666",
-                                                        marginBottom: "0.25rem",
-                                                    }}
-                                                >
-                                                    <strong>Room Code:</strong>
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <span className="font-semibold text-white/80">
+                                                        Room Code:
+                                                    </span>
+                                                    <div className="font-mono font-bold text-blue-300 bg-blue-900/30 px-2 py-1 rounded mt-1 inline-block">
+                                                        {campaign.roomCode}
+                                                    </div>
                                                 </div>
-                                                <div
-                                                    style={{
-                                                        fontFamily: "monospace",
-                                                        fontSize: "16px",
-                                                        fontWeight: "bold",
-                                                        color: "#667eea",
-                                                        backgroundColor: "rgba(102, 126, 234, 0.1)",
-                                                        padding: "0.25rem 0.5rem",
-                                                        borderRadius: "6px",
-                                                        display: "inline-block",
-                                                    }}
-                                                >
-                                                    {campaign.roomCode}
+                                                <div>
+                                                    <span className="font-semibold text-white/80">
+                                                        Players:
+                                                    </span>
+                                                    <div className="font-semibold text-white mt-1">
+                                                        {occupiedSeats} / {totalSeats} seats
+                                                        occupied
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "14px",
-                                                        color: "#666",
-                                                        marginBottom: "0.25rem",
-                                                    }}
-                                                >
-                                                    <strong>Players:</strong>
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "16px",
-                                                        fontWeight: "600",
-                                                        color: "#333",
-                                                    }}
-                                                >
-                                                    {occupiedSeats} / {totalSeats} seats occupied
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginTop: "1rem", fontSize: "14px" }}>
-                                            <span style={{ color: "#666" }}>
-                                                <strong>GM:</strong>{" "}
+                                            <div className="mt-3 text-sm">
+                                                <span className="font-semibold text-white/80">
+                                                    GM:{" "}
+                                                </span>
                                                 {(() => {
                                                     const gmSeat = campaign.seats.find(
                                                         (s) => s.role === "gm",
@@ -437,218 +320,15 @@ export default function JoinCampaignPage() {
                                                         return "❓ Not assigned";
                                                     }
                                                 })()}
-                                            </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Private Campaign Join Form Section */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "20px",
-                        padding: "2rem",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                        backdropFilter: "blur(10px)",
-                    }}
-                >
-                    <h3
-                        style={{
-                            fontSize: "24px",
-                            fontWeight: "600",
-                            margin: "0 0 1rem 0",
-                            color: "#333",
-                        }}
-                    >
-                        🔐 Private Campaign
-                    </h3>
-                    <p
-                        style={{
-                            color: "#666",
-                            marginBottom: "1.5rem",
-                            fontSize: "16px",
-                            lineHeight: "1.5",
-                        }}
-                    >
-                        Enter the 6-character room code to join a private campaign.
-                    </p>
-
-                    <form
-                        onSubmit={submitPrivateCampaign}
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "1.5rem",
-                            maxWidth: "500px",
-                        }}
-                    >
-                        <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    marginBottom: "0.5rem",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                }}
-                            >
-                                Room Code
-                            </label>
-                            <input
-                                value={roomCode}
-                                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                                placeholder="Enter 6-character room code"
-                                required
-                                maxLength={6}
-                                style={{
-                                    width: "100%",
-                                    padding: "16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    fontFamily: "monospace",
-                                    fontWeight: "bold",
-                                    textAlign: "center",
-                                    letterSpacing: "2px",
-                                    textTransform: "uppercase",
-                                    transition: "all 0.2s ease",
-                                    outline: "none",
-                                }}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor = "#667eea";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 0 0 3px rgba(102, 126, 234, 0.1)";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor = "#e5e7eb";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    marginBottom: "0.5rem",
-                                    fontWeight: "600",
-                                    fontSize: "16px",
-                                    color: "#374151",
-                                }}
-                            >
-                                Joining as
-                            </label>
-                            <input
-                                value={userProfile?.displayName || "Loading..."}
-                                readOnly
-                                style={{
-                                    width: "100%",
-                                    padding: "16px",
-                                    border: "2px solid #e5e7eb",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    backgroundColor: "#f9fafb",
-                                    color: "#374151",
-                                    cursor: "not-allowed",
-                                    fontWeight: "600",
-                                }}
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={joining || !roomCode.trim() || !userProfile}
-                            style={{
-                                padding: "16px 32px",
-                                background: joining
-                                    ? "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)"
-                                    : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "12px",
-                                fontSize: "18px",
-                                fontWeight: "600",
-                                cursor: joining || !roomCode.trim() ? "not-allowed" : "pointer",
-                                transition: "all 0.3s ease",
-                                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-                                opacity: joining || !roomCode.trim() ? 0.6 : 1,
-                            }}
-                            onMouseEnter={(e) => {
-                                if (!joining && roomCode.trim()) {
-                                    e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 10px 20px rgba(16, 185, 129, 0.3)";
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (!joining && roomCode.trim()) {
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                }
-                            }}
-                        >
-                            {joining ? "🎲 Joining..." : "🚀 Join Campaign"}
-                        </button>
-                    </form>
-                </div>
-
-                {/* Result Messages */}
-                {result && (
-                    <div
-                        style={{
-                            marginTop: "2rem",
-                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                            borderRadius: "20px",
-                            padding: "2rem",
-                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                            backdropFilter: "blur(10px)",
-                        }}
-                    >
-                        {result.error ? (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                    color: "#dc2626",
-                                    border: "2px solid rgba(239, 68, 68, 0.2)",
-                                    borderRadius: "12px",
-                                    padding: "1rem",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem",
-                                }}
-                            >
-                                <span style={{ fontSize: "20px" }}>❌</span>
-                                <div>
-                                    <strong>Error:</strong> {result.error}
-                                </div>
-                            </div>
-                        ) : (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(16, 185, 129, 0.1)",
-                                    color: "#059669",
-                                    border: "2px solid rgba(16, 185, 129, 0.2)",
-                                    borderRadius: "12px",
-                                    padding: "1rem",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem",
-                                }}
-                            >
-                                <span style={{ fontSize: "20px" }}>✅</span>
-                                <div>
-                                    <strong>Success!</strong> Joined campaign "
-                                    {result.campaign?.name}". Redirecting to seat...
-                                </div>
+                                    );
+                                })}
                             </div>
                         )}
-                    </div>
-                )}
-            </div>
-        </main>
+                    </Card>
+                </div>
+            </ContentWrapper>
+        </PageContainer>
     );
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import type { ReactNode } from "react";
+import "./globals.css";
 
 export const metadata = {
     title: "DnD AI",
@@ -9,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en">
-            <body style={{ margin: 0, fontFamily: "system-ui, sans-serif" }}>{children}</body>
+            <body className="m-0 font-sans">{children}</body>
         </html>
     );
 }
