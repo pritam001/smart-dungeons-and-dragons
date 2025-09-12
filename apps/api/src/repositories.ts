@@ -1254,3 +1254,17 @@ async function addRollToHistory(campaignId: CampaignId, roll: CharacterRoll): Pr
         );
     }
 }
+
+/**
+ * Get the seats for a specific campaign.
+ */
+export async function getSeatsForCampaign(
+    campaignId: string,
+    user: PublicUserProfile,
+): Promise<SeatAssignment[] | null> {
+    const db = await getDb();
+    const campaign = await campaignsCol(db).findOne({ id: campaignId });
+    if (!campaign) return null;
+
+    return campaign.seats;
+}

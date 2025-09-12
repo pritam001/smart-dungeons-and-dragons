@@ -25,6 +25,7 @@ import {
     rollCustomDice,
     rollPresetDice,
     getCampaignRollHistory,
+    getSeatsForCampaign,
 } from "./repositories.js";
 import { registerUser, loginUser, verifyToken, extractTokenFromHeader } from "./auth.js";
 import { isValidDiceNotation, getDiceSuggestions } from "./diceRoller.js";
@@ -1139,6 +1140,30 @@ fastify.post("/campaigns/:id/reorder-turn-order", async (req, reply) => {
         return { ok: true };
     } catch (error: any) {
         return reply.status(400).send({ error: error.message || "Failed to reorder turn order" });
+    }
+});
+
+fastify.get("/campaigns/:id/seats", async (req, reply) => {
+    const token = extractTokenFromHeader(req.headers.authorization);
+    if (!token) {
+        return reply.status(401).send({ error: "Authorization token required" });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+        return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const params = z.object({ id: z.string() }).parse(req.params);
+
+    try {
+        const seats = await getSeatsForCampaign(params.id, user);
+        if (!seats) {
+            return reply.status(404).send({ error: "Campaign not found or access denied" });
+        }
+        return { seats };
+    } catch (error: any) {
+        return reply.status(500).send({ error: "Failed to fetch seats" });
     }
 });
 
