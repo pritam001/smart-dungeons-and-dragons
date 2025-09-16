@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { CharacterSheet, CharacterRoll, DiceRoll } from "@dnd-ai/types";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function DiceRollerPage() {
+function DiceRollerPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const campaignId = searchParams.get("campaignId");
@@ -738,5 +738,13 @@ export default function DiceRollerPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function DiceRollerPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <DiceRollerPageInner />
+        </Suspense>
     );
 }

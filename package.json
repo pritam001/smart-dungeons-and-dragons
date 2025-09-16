@@ -6,7 +6,7 @@
         "packages/*"
     ],
     "scripts": {
-        "dev": "npm run dev:api & npm run dev:web",
+        "dev:full": "npm run dev:api & npm run dev:web",
         "dev:web": "npm run dev -w @dnd-ai/web",
         "dev:api": "npm run dev -w @dnd-ai/api",
         "prebuild": "node scripts/check-node.js",
@@ -48,5 +48,8 @@
     "volta": {
         "node": "24.7.0",
         "npm": "11.6.0"
+    },
+    "dependencies": {
+        "fastify-websocket": "^4.2.2"
     }
 }

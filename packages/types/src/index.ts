@@ -419,8 +419,8 @@ export interface CreateCharacterRequest {
     };
     appearance?: {
         age: number;
-        height: string;
-        weight: string;
+        height: number;
+        weight: number;
         eyes: string;
         skin: string;
         hair: string;
@@ -451,8 +451,8 @@ export interface UpdateCharacterRequest {
     }>;
     appearance?: Partial<{
         age: number;
-        height: string;
-        weight: string;
+        height: number;
+        weight: number;
         eyes: string;
         skin: string;
         hair: string;
@@ -476,6 +476,11 @@ export interface DiceRoll {
     criticalSuccess: boolean;
     criticalFailure: boolean;
     timestamp: string;
+
+    // New properties
+    characterId?: string; // ID of the character rolling the dice
+    description?: string; // Optional description for the roll
+    rollType?: string; // Type of roll (e.g., attack, saving throw, etc.)
 }
 
 export interface DiceResult {
@@ -561,8 +566,8 @@ export interface PlayerCharacterUpdateRequest {
     }>;
     appearance?: Partial<{
         age: number;
-        height: string;
-        weight: string;
+        height: number;
+        weight: number;
         eyes: string;
         skin: string;
         hair: string;

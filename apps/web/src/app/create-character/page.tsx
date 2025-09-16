@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CharacterStats, CharacterRace, CharacterClass, CharacterBackground } from "@dnd-ai/types";
 
-export default function CreateCharacterPage() {
+function CreateCharacterPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const campaignId = searchParams.get("campaignId");
@@ -785,5 +785,13 @@ export default function CreateCharacterPage() {
                 )}
             </div>
         </main>
+    );
+}
+
+export default function CreateCharacterPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <CreateCharacterPageInner />
+        </Suspense>
     );
 }

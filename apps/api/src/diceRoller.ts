@@ -337,6 +337,67 @@ export class DnDRoller {
 }
 
 /**
+ * Roll dice for a specific character
+ */
+export function rollDiceForCharacter(
+    characterId: string,
+    notation: string,
+    rollType?: string,
+    advantage?: boolean,
+    disadvantage?: boolean,
+    customModifier?: number,
+): DiceRoll {
+    const baseRoll = rollDice(notation, advantage, disadvantage);
+
+    // Apply custom modifier if provided
+    if (customModifier) {
+        baseRoll.total += customModifier;
+    }
+
+    return {
+        ...baseRoll,
+        characterId,
+        rollType,
+    };
+}
+
+/**
+ * Roll preset dice for a specific type
+ */
+export function rollPresetDice(
+    characterId: string,
+    type: string,
+    ability?: string,
+    advantage?: boolean,
+    disadvantage?: boolean,
+): DiceRoll {
+    let notation = "1d20"; // Default to d20 for most rolls
+
+    if (type === "hit-dice") {
+        notation = "1d8"; // Example: hit dice could be d8
+    }
+
+    return rollDiceForCharacter(characterId, notation, type, advantage, disadvantage);
+}
+
+/**
+ * Roll custom dice based on notation
+ */
+export function rollCustomDice(
+    notation: string,
+    advantage?: boolean,
+    disadvantage?: boolean,
+    description?: string,
+): DiceRoll {
+    const baseRoll = rollDice(notation, advantage, disadvantage);
+
+    return {
+        ...baseRoll,
+        description,
+    };
+}
+
+/**
  * Validate dice notation
  */
 export function isValidDiceNotation(notation: string): boolean {

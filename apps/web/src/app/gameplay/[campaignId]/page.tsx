@@ -104,7 +104,7 @@ const GameplayPage = () => {
                 <div className="w-1/4 p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
                     <h2 className="text-xl font-bold mb-4 text-gray-700">Available Seats</h2>
                     <ul className="space-y-2">
-                        {seats.map((seat) => {
+                        {(seats ?? []).map((seat) => {
                             const isSeatOccupied = !!seat.humanPlayerId || seat.ai?.enabled;
                             const seatOccupier =
                                 seat.humanPlayerId ||

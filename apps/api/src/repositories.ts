@@ -870,8 +870,9 @@ export async function createCharacter(
         },
         appearance: {
             age: req.appearance?.age || 25,
-            height: req.appearance?.height || "5'8\"",
-            weight: req.appearance?.weight || "150 lbs",
+            height: req.appearance?.height !== undefined ? String(req.appearance.height) : "5'8\"",
+            weight:
+                req.appearance?.weight !== undefined ? String(req.appearance.weight) : "150 lbs",
             eyes: req.appearance?.eyes || "Brown",
             skin: req.appearance?.skin || "Medium",
             hair: req.appearance?.hair || "Brown",
@@ -978,8 +979,12 @@ export async function updateCharacterAsPlayer(
     updates: PlayerCharacterUpdateRequest,
     user: PublicUserProfile,
 ): Promise<CharacterSheet | null> {
+    console.log("[updateCharacterAsPlayer] characterId:", characterId);
+    console.log("[updateCharacterAsPlayer] updates:", updates);
+    console.log("[updateCharacterAsPlayer] user:", user);
     // Check permissions first
     const permissions = await getCharacterEditPermissions(characterId, user);
+    console.log("[updateCharacterAsPlayer] permissions:", permissions);
 
     // Validate that player can only update allowed fields
     const allowedUpdates: Partial<PlayerCharacterUpdateRequest> = {};
@@ -997,13 +1002,35 @@ export async function updateCharacterAsPlayer(
         allowedUpdates.appearance = updates.appearance;
     }
 
-    // If no allowed updates, throw error
+    // If no allowed updates, clarify if nothing was provided to update
     if (Object.keys(allowedUpdates).length === 0) {
-        throw new Error("Access denied: You don't have permission to make these changes");
+        if (Object.keys(updates).length === 0) {
+            console.log("[updateCharacterAsPlayer] No fields provided to update", {
+                characterId,
+                updates,
+                user,
+                permissions,
+            });
+            throw new Error("No fields provided to update");
+        } else {
+            console.log("[updateCharacterAsPlayer] Access denied: No allowed updates", {
+                characterId,
+                updates,
+                user,
+                permissions,
+            });
+            throw new Error("Access denied: You don't have permission to make these changes");
+        }
     }
 
     // Perform the update using the existing function
-    return await updateCharacter(characterId, allowedUpdates as UpdateCharacterRequest, user);
+    const result = await updateCharacter(
+        characterId,
+        allowedUpdates as UpdateCharacterRequest,
+        user,
+    );
+    console.log("[updateCharacterAsPlayer] updateCharacter result:", result);
+    return result;
 }
 
 export async function updateCharacterAsGM(
