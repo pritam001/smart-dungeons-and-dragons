@@ -181,16 +181,16 @@ const GameplayPage = () => {
 
     // Reintroduced the available seats list in the gameplay page
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white relative">
+        <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex flex-col items-center p-8 justify-start text-white relative">
             <button
                 className="mt-6 px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 absolute top-8 left-8 z-10"
                 onClick={() => router.push(`/seat/${campaignId}`)}
             >
                 ← Back to Seats
             </button>
-            <div className="w-full max-w-7xl p-8 flex gap-8">
+            <div className="w-full max-w-7xl p-8 flex flex-col lg:flex-row gap-8">
                 {/* Left Sidebar for Seats */}
-                <div className="w-1/4 p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
+                <div className="w-full lg:w-1/4 p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
                     <h2 className="text-xl font-bold mb-4 text-gray-700">Available Seats</h2>
                     <ul className="space-y-2">
                         {(seats ?? []).map((seat) => {
@@ -221,7 +221,7 @@ const GameplayPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="w-3/4 p-8 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
+                <div className="w-full lg:w-3/4 p-8 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
                     <h1 className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
                         Gameplay Turn Tracker
                     </h1>
@@ -236,10 +236,7 @@ const GameplayPage = () => {
                                 Round: {roundNumber}
                             </h2>
                             <h3 className="text-lg text-gray-600 mt-2">
-                                Current Turn:{" "}
-                                {turnOrder?.length > 0 && currentTurnIndex < turnOrder.length
-                                    ? turnOrder[currentTurnIndex]
-                                    : "N/A"}
+                                Current Turn: {turnOrder?.[currentTurnIndex] || "N/A"}
                             </h3>
                         </div>
                         <div className="flex gap-4">
@@ -271,21 +268,26 @@ const GameplayPage = () => {
                             </button>
                         </div>
                     </div>
-                    <ul className="mb-6 space-y-2">
-                        {turnOrder?.map((player, index) => (
-                            <li
-                                key={index}
-                                className={`p-3 rounded-lg shadow-sm border border-gray-200 ${
-                                    index === currentTurnIndex
-                                        ? "bg-green-200 font-bold text-gray-800"
-                                        : "bg-white text-gray-600"
-                                }`}
-                            >
-                                {player}
-                            </li>
-                        ))}
-                    </ul>
                 </div>
+            </div>
+
+            {/* Bottom Section for Next Players (Horizontal) */}
+            <div className="w-full p-3 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Next Players</h2>
+                <ul className="flex flex-row gap-4 justify-center">
+                    {turnOrder?.map((player, index) => (
+                        <li
+                            key={index}
+                            className={`p-3 rounded-lg shadow-sm border border-gray-200 ${
+                                index === currentTurnIndex
+                                    ? "bg-green-200 font-bold text-gray-800"
+                                    : "bg-white text-gray-600"
+                            }`}
+                        >
+                            {player}
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
