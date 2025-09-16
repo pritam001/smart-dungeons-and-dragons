@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-dotenv.config();
-
+import path from "path";
+import { fileURLToPath } from "url";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { snapshotRegistry } from "./aiModels.js";
@@ -10,6 +10,19 @@ import { characterRoutes } from "./routes/characterRoutes.js";
 import { diceRoutes } from "./routes/diceRoutes.js";
 import { turnTrackingRoutes } from "./routes/turnTrackingRoutes.js";
 import { aiRoutes } from "./routes/aiRoutes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dotenvResult = dotenv.config({
+    path: path.join(__dirname, "../.env"),
+    debug: true,
+    override: true,
+});
+if (dotenvResult.error) {
+    console.error("Failed to load .env file:", dotenvResult.error);
+    process.exit(1); // Exit if .env file cannot be loaded
+}
 
 // --- WebSocket Setup ---
 
