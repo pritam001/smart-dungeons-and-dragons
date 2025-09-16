@@ -1308,3 +1308,22 @@ export async function getSeatsForCampaign(
 
     return campaign.seats;
 }
+
+// --- Chat Message Persistence ---
+import { ChatMessage } from "@dnd-ai/types";
+
+export async function saveChatMessage(message: ChatMessage): Promise<void> {
+    const db = await getDb();
+    await db.collection("chatMessages").insertOne(message);
+}
+
+export async function getChatMessages(campaignId: string, limit = 50): Promise<ChatMessage[]> {
+    const db = await getDb();
+    const docs = await db
+        .collection("chatMessages")
+        .find({ campaignId })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .toArray();
+    return docs.map(({ _id, ...msg }) => msg as ChatMessage);
+}

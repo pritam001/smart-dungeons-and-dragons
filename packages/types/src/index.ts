@@ -610,3 +610,22 @@ export interface CharacterUpdateAuditLog {
     newValues: Record<string, any>;
     campaignId?: CampaignId;
 }
+
+// --- Chat Message Types ---
+export interface ChatMessage {
+    id: string; // Unique message ID
+    campaignId: CampaignId;
+    senderId: PlayerId;
+    senderName: string;
+    text: string;
+    createdAt: string;
+}
+
+export interface ChatMessageEvent {
+    type: "chatMessage";
+    payload: ChatMessage;
+}
+
+export interface ChatHistoryResponse {
+    messages: ChatMessage[];
+}

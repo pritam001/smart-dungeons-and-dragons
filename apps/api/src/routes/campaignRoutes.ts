@@ -13,6 +13,7 @@ import {
     regenerateRoomCode,
     getSeatsForCampaign,
     getCharactersByCampaign,
+    getChatMessages,
 } from "../repositories.js";
 import { extractTokenFromHeader, verifyToken } from "../auth.js";
 import { campaignsCol, getDb } from "../mongo.js";
@@ -365,5 +366,21 @@ export async function campaignRoutes(fastify: FastifyInstance) {
         const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
 
         return reply.send({ isGM });
+    });
+
+    fastify.get("/campaigns/:campaignId/chat", async (request, reply) => {
+        const paramsSchema = z.object({ campaignId: z.string() });
+        const querySchema = z.object({ limit: z.string().optional() });
+        try {
+            const params = paramsSchema.parse(request.params);
+            const query = querySchema.parse(request.query);
+            const limit = query.limit ? parseInt(query.limit, 10) : 50;
+            const messages = await getChatMessages(params.campaignId, limit);
+            return { messages };
+        } catch (error: any) {
+            return reply
+                .status(400)
+                .send({ error: error.message || "Failed to fetch chat history" });
+        }
     });
 }

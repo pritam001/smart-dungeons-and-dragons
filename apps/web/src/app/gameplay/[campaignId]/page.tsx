@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { SeatAssignment } from "@dnd-ai/types";
+import ChatBox from "./ChatBox";
 
 const GameplayPage = () => {
     const router = useRouter();
@@ -267,6 +268,11 @@ const GameplayPage = () => {
                                 Reorder Turns
                             </button>
                         </div>
+                    </div>
+
+                    {/* Chat Section */}
+                    <div className="mt-8 w-full">
+                        <ChatBox campaignId={campaignId as string} />
                     </div>
                 </div>
             </div>

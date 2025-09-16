@@ -10,7 +10,7 @@ import { turnTrackingRoutes } from "./routes/turnTrackingRoutes.js";
 // --- WebSocket Setup ---
 
 import { WebSocketServer, WebSocket } from "ws";
-import type { TurnUpdateEvent } from "../../../packages/types/src/index.js";
+import type { TurnUpdateEvent, ChatMessageEvent } from "../../../packages/types/src/index.js";
 
 // Map campaignId to Set of WebSocket clients
 const campaignClients: Record<string, Set<WebSocket>> = {};
@@ -35,8 +35,20 @@ function setupWebSocket(server: any) {
         campaignClients[campaignId].add(ws);
 
         // Log incoming messages
-        ws.on("message", (message) => {
+        ws.on("message", async (message) => {
             console.log(`[WS] Message received for campaignId=${campaignId}:`, message.toString());
+            try {
+                const msg = JSON.parse(message.toString());
+                if (msg.type === "chatMessage" && msg.payload) {
+                    // Save to DB
+                    const { saveChatMessage } = await import("./repositories.js");
+                    await saveChatMessage(msg.payload);
+                    // Broadcast to all clients
+                    broadcastChatMessage(campaignId, msg);
+                }
+            } catch (err) {
+                console.error("Failed to process chat message:", err);
+            }
         });
 
         ws.on("close", (code, reason) => {
@@ -54,6 +66,16 @@ export function broadcastTurnUpdate(event: TurnUpdateEvent) {
     const clients = campaignClients[event.campaignId];
     if (!clients) return;
     const msg = JSON.stringify({ type: "turnUpdate", payload: event });
+    for (const ws of clients) {
+        if (ws.readyState === ws.OPEN) ws.send(msg);
+    }
+}
+
+// Helper to broadcast chat messages
+function broadcastChatMessage(campaignId: string, chatEvent: ChatMessageEvent) {
+    const clients = campaignClients[campaignId];
+    if (!clients) return;
+    const msg = JSON.stringify(chatEvent);
     for (const ws of clients) {
         if (ws.readyState === ws.OPEN) ws.send(msg);
     }
