@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { snapshotRegistry } from "./aiModels.js";
@@ -6,6 +9,7 @@ import { campaignRoutes } from "./routes/campaignRoutes.js";
 import { characterRoutes } from "./routes/characterRoutes.js";
 import { diceRoutes } from "./routes/diceRoutes.js";
 import { turnTrackingRoutes } from "./routes/turnTrackingRoutes.js";
+import { aiRoutes } from "./routes/aiRoutes.js";
 
 // --- WebSocket Setup ---
 
@@ -93,6 +97,7 @@ await campaignRoutes(fastify);
 await characterRoutes(fastify);
 await diceRoutes(fastify);
 await turnTrackingRoutes(fastify);
+await aiRoutes(fastify);
 
 const port = Number(process.env.PORT || 13333);
 fastify

@@ -1,3 +1,6 @@
+# Ignore environment files
+apps/api/.env
+!apps/api/.env.example
 # Dependencies
 node_modules/
 

@@ -11,8 +11,10 @@
 -   🎲 **Advanced Dice Rolling** - Comprehensive D&D 5e mechanics with visual feedback
 -   🔒 **Security & Permissions** - Anti-cheat system with role-based access control
 -   🚀 **Performance Optimized** - Fast loading with visual feedback and error handling
+-   💬 **Real-Time Chat** - Persistent campaign chat with WebSocket live updates
+-   🔄 **Turn Tracking** - Real-time initiative and round management, GM controls, and player display
 
-A modern, beautifully designed web platform for playing Dungeons & Dragons with integrated AI assistance. Features comprehensive campaign management, intelligent character creation, advanced dice rolling, and AI companions.
+A modern, beautifully designed web platform for playing Dungeons & Dragons with integrated AI assistance. Features comprehensive campaign management, intelligent character creation, advanced dice rolling, real-time chat, turn tracking, and AI companions.
 
 ## ⚡ **Quick Start**
 
@@ -45,6 +47,13 @@ npm install && npm run dev
 -   **Progress**: Step-based workflows with visual progress tracking
 
 ## 🎯 **Core Features**
+
+### ✅ **Real-Time Chat & Turn Tracking**
+
+-   💬 **Campaign Chat**: Persistent, real-time chat for each campaign, powered by MongoDB and WebSockets
+-   🔄 **Turn Tracker**: Live initiative and round management, GM-only controls, player display, and horizontal turn order UI
+-   🛡️ **Permissioned Controls**: GM-only actions for advancing, skipping, and reordering turns
+-   ⚡ **WebSocket Integration**: Instant updates for chat and turn order across all connected clients
 
 ### ✅ **Authentication & User Management**
 
@@ -527,12 +536,13 @@ npm run format       # Format code with Prettier
 -   [x] **Campaign Configuration**: Privacy settings, descriptions, AI model restrictions, edit modes ✅
 -   [x] **Player Management**: Remove players, transfer ownership, role management ✅
 -   [x] **Campaign State Tracking**: Status management, session tracking, basic notes ✅
+-   [x] **Real-Time Chat**: Persistent campaign chat with live updates ✅
+-   [x] **Turn Tracking**: Real-time initiative and round management ✅
 
 ### **Phase 2: Interactive Features (Medium Priority)**
 
--   [ ] **Chat System**: In-campaign messaging with IC/OOC modes
--   [ ] **Game State Management**: Turn tracking, HP management, status effects
--   [ ] **Combat Initiative**: Turn order tracking and management
+-   [ ] **Game State Management**: HP management, status effects
+-   [ ] **Combat Initiative Enhancements**: Advanced turn order, conditions, and automation
 
 ### **Phase 3: AI Enhancement (Medium Priority)**
 
@@ -542,7 +552,6 @@ npm run format       # Format code with Prettier
 
 ### **Phase 4: Advanced Features (Lower Priority)**
 
--   [ ] **Real-time Multiplayer**: WebSocket integration for live updates
 -   [ ] **Content Management**: Campaign notes, NPC management, map tools
 -   [ ] **Adventure Modules**: Pre-built campaigns and story templates
 

@@ -1,3 +1,15 @@
+// --- AI Suggestion Types ---
+export interface AISuggestionRequest {
+    campaignId: CampaignId;
+    prompt: string;
+    context?: Record<string, any>; // optional campaign/game context
+}
+
+export interface AISuggestionResponse {
+    suggestions: string[]; // List of AI-generated suggestions
+    modelId?: string;
+    rawResponse?: any; // Optional raw Gemini/OpenAI response
+}
 export type PlayerId = string;
 export type CampaignId = string;
 export type RoomCode = string;
