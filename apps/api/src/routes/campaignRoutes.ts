@@ -15,6 +15,15 @@ import {
     getCharactersByCampaign,
 } from "../repositories.js";
 import { extractTokenFromHeader, verifyToken } from "../auth.js";
+import { campaignsCol, getDb } from "../mongo.js";
+import { SeatAssignment } from "@dnd-ai/types";
+import { FastifyRequest } from "fastify";
+
+declare module "fastify" {
+    interface FastifyRequest {
+        user?: { id: string }; // Extend FastifyRequest to include user property
+    }
+}
 
 export async function campaignRoutes(fastify: FastifyInstance) {
     fastify.post("/campaigns", async (req, reply) => {
@@ -332,5 +341,29 @@ export async function campaignRoutes(fastify: FastifyInstance) {
         } catch (error: any) {
             return reply.status(500).send({ error: "Failed to fetch seats" });
         }
+    });
+
+    fastify.get("/campaigns/:campaignId/user-role", async (request: FastifyRequest, reply) => {
+        const { campaignId } = request.params as { campaignId: string };
+        const token = extractTokenFromHeader(request.headers.authorization);
+        if (!token) {
+            return reply.status(401).send({ error: "Authorization token required" });
+        }
+
+        const user = await verifyToken(token);
+        if (!user) {
+            return reply.status(401).send({ error: "Unauthorized" });
+        }
+
+        const db = await getDb();
+        const campaign = await campaignsCol(db).findOne({ id: campaignId });
+        if (!campaign) {
+            return reply.status(404).send({ error: "Campaign not found" });
+        }
+
+        const gmSeat = campaign.seats.find((seat: SeatAssignment) => seat.role === "gm");
+        const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
+
+        return reply.send({ isGM });
     });
 }

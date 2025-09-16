@@ -55,7 +55,24 @@ export async function advanceTurn(campaignId: string, user: PublicUserProfile): 
         { id: campaignId },
         { $set: { currentTurnIndex, roundNumber, updatedAt: new Date().toISOString() } },
     );
-    return result.modifiedCount > 0;
+    if (result.modifiedCount > 0) {
+        // Emit turn update event via WebSocket
+        try {
+            // Dynamically import broadcastTurnUpdate to avoid circular deps
+            const { broadcastTurnUpdate } = await import("./index.js");
+            const event = {
+                campaignId,
+                turnOrder,
+                currentTurnIndex,
+                roundNumber,
+            };
+            broadcastTurnUpdate(event);
+        } catch (err) {
+            console.error("Failed to broadcast turn update:", err);
+        }
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -105,10 +122,6 @@ export async function getTurnOrder(
     const db = await getDb();
     const campaign = await campaignsCol(db).findOne({ id: campaignId });
     if (!campaign) return null;
-
-    const gmSeat = campaign.seats.find((s) => s.role === "gm");
-    const isGM = gmSeat?.humanPlayerId === user.id || campaign.createdBy === user.id;
-    if (!isGM) return null;
 
     return {
         turnOrder: campaign.turnOrder || [],

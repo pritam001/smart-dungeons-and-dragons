@@ -60,7 +60,16 @@ export async function turnTrackingRoutes(fastify: FastifyInstance) {
             const params = paramsSchema.parse(req.params);
             const ok = await advanceTurn(params.id, user);
             if (!ok) return reply.status(400).send({ error: "Failed to advance turn" });
-            return { ok: true };
+
+            const turnOrderDetails = await getTurnOrder(params.id, user);
+            if (!turnOrderDetails) return reply.status(404).send({ error: "Turn order not found" });
+
+            return {
+                ok: true,
+                turnOrder: turnOrderDetails.turnOrder,
+                currentTurnIndex: turnOrderDetails.currentTurnIndex,
+                roundNumber: turnOrderDetails.roundNumber,
+            };
         } catch (error: any) {
             return reply.status(400).send({ error: error.message || "Failed to advance turn" });
         }
@@ -76,7 +85,16 @@ export async function turnTrackingRoutes(fastify: FastifyInstance) {
             const params = paramsSchema.parse(req.params);
             const ok = await skipTurn(params.id, user);
             if (!ok) return reply.status(400).send({ error: "Failed to skip turn" });
-            return { ok: true };
+
+            const turnOrderDetails = await getTurnOrder(params.id, user);
+            if (!turnOrderDetails) return reply.status(404).send({ error: "Turn order not found" });
+
+            return {
+                ok: true,
+                turnOrder: turnOrderDetails.turnOrder,
+                currentTurnIndex: turnOrderDetails.currentTurnIndex,
+                roundNumber: turnOrderDetails.roundNumber,
+            };
         } catch (error: any) {
             return reply.status(400).send({ error: error.message || "Failed to skip turn" });
         }
@@ -94,7 +112,16 @@ export async function turnTrackingRoutes(fastify: FastifyInstance) {
             const body = bodySchema.parse(req.body);
             const ok = await reorderTurnOrder(params.id, body.turnOrder, user);
             if (!ok) return reply.status(400).send({ error: "Failed to reorder turn order" });
-            return { ok: true };
+
+            const turnOrderDetails = await getTurnOrder(params.id, user);
+            if (!turnOrderDetails) return reply.status(404).send({ error: "Turn order not found" });
+
+            return {
+                ok: true,
+                turnOrder: turnOrderDetails.turnOrder,
+                currentTurnIndex: turnOrderDetails.currentTurnIndex,
+                roundNumber: turnOrderDetails.roundNumber,
+            };
         } catch (error: any) {
             return reply
                 .status(400)

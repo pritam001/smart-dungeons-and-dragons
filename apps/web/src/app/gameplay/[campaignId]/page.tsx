@@ -12,27 +12,94 @@ const GameplayPage = () => {
     const [turnOrder, setTurnOrder] = useState<string[]>([]);
     const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
     const [roundNumber, setRoundNumber] = useState(1);
+    // Error state
+    const [error, setError] = useState<string | null>(null);
 
     // Added state for seats
     const [seats, setSeats] = useState<SeatAssignment[]>([]);
+    const [isGM, setIsGM] = useState(false);
 
     useEffect(() => {
         // Fetch initial turn tracker data from the backend
         async function fetchTurnTracker() {
-            const token = localStorage.getItem("authToken");
-            const response = await fetch(
-                `http://localhost:13333/campaigns/${campaignId}/turn-order`,
-                {
-                    method: "GET",
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            );
-            const data = await response.json();
-            setTurnOrder(data.turnOrder);
-            setCurrentTurnIndex(data.currentTurnIndex);
-            setRoundNumber(data.roundNumber);
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await fetch(
+                    `http://localhost:13333/campaigns/${campaignId}/turn-order`,
+                    {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                if (!response.ok) throw new Error("Failed to fetch turn order");
+                const data = await response.json();
+                setTurnOrder(data.turnOrder);
+                setCurrentTurnIndex(data.currentTurnIndex);
+                setRoundNumber(data.roundNumber);
+                setError(null);
+            } catch (err: any) {
+                setError(err?.message || "Error fetching turn tracker");
+                console.error("Error fetching turn tracker:", err);
+            }
         }
         fetchTurnTracker();
+
+        // --- WebSocket for real-time turn updates ---
+        let ws: WebSocket | null = null;
+        let retryTimeout: NodeJS.Timeout | null = null;
+
+        const connectWebSocket = () => {
+            try {
+                ws = new WebSocket(`ws://localhost:13333/ws?campaignId=${campaignId}`);
+
+                ws.onopen = () => {
+                    setError(null);
+                    console.log("WebSocket connected");
+                };
+
+                ws.onerror = (event) => {
+                    setError("WebSocket error");
+                    console.error("WebSocket error:", event);
+                };
+
+                ws.onclose = (event) => {
+                    if (!event.wasClean) {
+                        setError("WebSocket closed unexpectedly");
+                        console.error("WebSocket closed unexpectedly:", event);
+                    }
+                    // Retry connection after a delay
+                    retryTimeout = setTimeout(() => {
+                        console.log("Retrying WebSocket connection...");
+                        connectWebSocket();
+                    }, 5000); // Retry after 5 seconds
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === "turnUpdate" && msg.payload) {
+                            setTurnOrder(msg.payload.turnOrder);
+                            setCurrentTurnIndex(msg.payload.currentTurnIndex);
+                            setRoundNumber(msg.payload.roundNumber);
+                            setError(null);
+                        }
+                    } catch (err) {
+                        setError("WebSocket message parse error");
+                        console.error("WebSocket message parse error:", err);
+                    }
+                };
+            } catch (err: any) {
+                setError("WebSocket connection error");
+                console.error("WebSocket connection error:", err);
+            }
+        };
+
+        connectWebSocket();
+
+        return () => {
+            if (ws) ws.close();
+            if (retryTimeout) clearTimeout(retryTimeout);
+        };
     }, [campaignId]);
 
     useEffect(() => {
@@ -48,6 +115,28 @@ const GameplayPage = () => {
         }
 
         fetchSeats();
+    }, [campaignId]);
+
+    useEffect(() => {
+        // Fetch user role to determine if they are the GM
+        async function fetchUserRole() {
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await fetch(
+                    `http://localhost:13333/campaigns/${campaignId}/user-role`,
+                    {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                if (!response.ok) throw new Error("Failed to fetch user role");
+                const data = await response.json();
+                setIsGM(data.isGM);
+            } catch (err) {
+                console.error("Error fetching user role:", err);
+            }
+        }
+        fetchUserRole();
     }, [campaignId]);
 
     const advanceTurn = async () => {
@@ -136,6 +225,11 @@ const GameplayPage = () => {
                     <h1 className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
                         Gameplay Turn Tracker
                     </h1>
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-200 text-red-800 rounded-lg shadow">
+                            <strong>Error:</strong> {error}
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-700">
@@ -150,8 +244,9 @@ const GameplayPage = () => {
                         </div>
                         <div className="flex gap-4">
                             <button
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600"
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 onClick={advanceTurn}
+                                disabled={!isGM}
                             >
                                 Advance Turn
                             </button>
@@ -162,7 +257,7 @@ const GameplayPage = () => {
                                 Skip Turn
                             </button>
                             <button
-                                className="px-4 py-2 bg-purple-500 text-white rounded-lg shadow hover:bg-purple-600"
+                                className="px-4 py-2 bg-purple-500 text-white rounded-lg shadow hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 onClick={() => {
                                     const input = prompt("Enter new turn order (comma-separated):");
                                     if (input) {
@@ -170,6 +265,7 @@ const GameplayPage = () => {
                                         reorderTurns(newOrder);
                                     }
                                 }}
+                                disabled={!isGM}
                             >
                                 Reorder Turns
                             </button>

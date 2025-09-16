@@ -50,6 +50,8 @@
         "npm": "11.6.0"
     },
     "dependencies": {
-        "fastify-websocket": "^4.2.2"
+        "@types/ws": "^8.18.1",
+        "fastify-websocket": "^4.2.2",
+        "ws": "^8.18.3"
     }
 }

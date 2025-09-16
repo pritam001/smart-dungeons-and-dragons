@@ -96,6 +96,13 @@ export interface CampaignConfig {
      */
     roundNumber: number;
 }
+// --- Real-time Turn Tracking Events ---
+export interface TurnUpdateEvent {
+    campaignId: CampaignId;
+    turnOrder: string[];
+    currentTurnIndex: number;
+    roundNumber: number;
+}
 
 export interface CreateCampaignRequest {
     name: string;
